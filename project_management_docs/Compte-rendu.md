@@ -3,8 +3,8 @@
 ------------
 
 
-#Compte-rendu  : Projet Cimp
-###Membres :  
+# Compte-rendu  : Projet Cimp
+### Membres :  
 **- Alim Yanis**
 **- Bareche Yassine**
 **- Bouzaouit Oussama**
@@ -12,22 +12,22 @@
 ------------
 
 
-#####DATE : 12 FEVRIER / 14h30 à 16h30 / SALLE 2001
-#####Rapporteur : Alim Yanis
+##### DATE : 12 FEVRIER / 14h30 à 16h30 / SALLE 2001
+##### Rapporteur : Alim Yanis
 
 ------------
 
 
-###Ordre du jour :
-####Suivi de la semaine 1  : 
+### Ordre du jour :
+#### Suivi de la semaine 1  : 
 1. BrainStorming du projet
 2. Plan generale du projet
 
-####Points abordés  : 
+#### Points abordés  : 
 1. Rédaction des specifications
 
 
-###Tâches à accomplir lors de la semaine 2:
+### Tâches à accomplir lors de la semaine 2:
 1. 
 2. 
 3. 
