@@ -1,0 +1,17 @@
+1- Analyse des besoins et specifications :
+	- Specifications fonctionnelles
+	- Specifications techniques
+	- Diagramme de cas d'utilisation
+
+2- Planification :
+	- Expliciter les macro-tachês du projet
+	- Feuille de route 
+	- Diagramme de Gantt
+
+3- Conception 
+
+4- Réalisation
+
+5- Integration et tests
+
+	
