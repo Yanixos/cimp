@@ -1,0 +1,36 @@
+
+*********************************
+
+Spécifications du système :
+
+********************************
+
+
+1) Le système doit permettre de visualiser des images.
+2) Le système doit utiliser la bibilotheques SDL2,0 pour visualiser les images.
+3) Le système doit intéragir avec l’utilisateur à l’aide d’une interface en ligne de commande.
+4) Le système doit permettre à l’utilisateur d’utiliser la souris pour compléter des demandes d’opérations sur l’image visualise.
+5) L’interface de système doit etre explécite et ne présente pas d’ambiguité.
+6) Le choix  de de langage de commandes utilisé dans CLI est libre.
+7) Le langage de de commande  utilsé dans CLI doit etre explécite.
+8) Le système doit permettre de charger en memoire une ou plusieurs images.
+9) Le système doit permettre de transferer une image chargé dans une fenetre déjà ouverte.
+10)Le système doit permettre de transferer une image dans une nouvelle fenetre.
+11)Le système doit etre fléxible en terme de format d’image supportés i,e : il doit supporter les formats suivants :
+	jpg, bmp, png.
+12)Le système doit permettre de sauvgarder une image transformée, à tout moment ou l’utilisateur le désire.
+13)Le système doit permettre de sauvgarder une image pas forcement dans son format d’origine ou  avec son nom d’origine (Oussama ajoute les siens)<<<<<<<<<<<<<<<<<<<<<<<<
+14)Le système doit permettre de faire des modifications uniformes de pixels sur l’image entières.
+15)Le système doit permettre de faire des modifications uniformes de pixels sur une partie de l’image.
+16)Le système doit permettre à l’utilisateur de choisir la partie d’image sur laquelle doit se faire les changements,
+17)Le système doit permettre à l’utilisateur de séléctioner une partie rectangulaire de l’image à l’aide de la souris.
+18)Le système doit permettre à l’utilisateur de séléctioner une partie délimité par tracé libre de la souris.
+19)Le système doit permettre à l’utilisateur de séléctioner une partie de l’image qui satisfait certaints contraintes à savoir : les pixels de l’image d’une couleur donnée avec ou sans marge de tolérance.
+20)Le système doit permettre de visualiser clairement la partie sélectionné par l’utilisateur.
+21)Le système doit permettre de supprimer une partie de la séléction courante.
+22)Le Le système doit permettre d'ajouter une partie à la séléction courante.
+23)Le système doit permettre de deséléctioner à tout moment la séléction courante.
+24)Le sytème doit permettre de copier une partie de l’image.
+25)Le sytème doit permettre de couper une partie de l’image et de remplacer la région coupé par une couleur par défaut ou par une couleur défini par l'utilisateur.
+26)Le système doit permettre de coller une partie copié à un endroit spécifier par l’utilisateur.
+27)Le système doit permettre de coller une partie copié depuis une autre image.
