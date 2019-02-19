@@ -9,28 +9,50 @@ Spécifications du système :
 1) Le système doit permettre de visualiser des images.
 2) Le système doit utiliser la bibilotheques SDL2,0 pour visualiser les images.
 3) Le système doit intéragir avec l’utilisateur à l’aide d’une interface en ligne de commande.
-4) Le système doit permettre à l’utilisateur d’utiliser la souris pour compléter des demandes d’opérations sur l’image visualise.
-5) L’interface de système doit etre explécite et ne présente pas d’ambiguité.
-6) Le choix  de de langage de commandes utilisé dans CLI est libre.
-7) Le langage de de commande  utilsé dans CLI doit etre explécite.
+4) Le système doit permettre à l’utilisateur d’utiliser la souris pour compléter des demandes d’opérations sur l’image visualisée.
+5) L’interface de système doit etre explicite et ne présente pas d’ambiguité.
+6) Le choix de langage de commandes utilisé dans CLI est libre.
+7) Le langage de commande  utilsé dans CLI doit etre explicite.
 8) Le système doit permettre de charger en memoire une ou plusieurs images.
 9) Le système doit permettre de transferer une image chargé dans une fenetre déjà ouverte.
 10)Le système doit permettre de transferer une image dans une nouvelle fenetre.
-11)Le système doit etre fléxible en terme de format d’image supportés i,e : il doit supporter les formats suivants :
-	jpg, bmp, png.
-12)Le système doit permettre de sauvgarder une image transformée, à tout moment ou l’utilisateur le désire.
-13)Le système doit permettre de sauvgarder une image pas forcement dans son format d’origine ou  avec son nom d’origine (Oussama ajoute les siens)<<<<<<<<<<<<<<<<<<<<<<<<
-14)Le système doit permettre de faire des modifications uniformes de pixels sur l’image entières.
-15)Le système doit permettre de faire des modifications uniformes de pixels sur une partie de l’image.
-16)Le système doit permettre à l’utilisateur de choisir la partie d’image sur laquelle doit se faire les changements,
-17)Le système doit permettre à l’utilisateur de séléctioner une partie rectangulaire de l’image à l’aide de la souris.
-18)Le système doit permettre à l’utilisateur de séléctioner une partie délimité par tracé libre de la souris.
-19)Le système doit permettre à l’utilisateur de séléctioner une partie de l’image qui satisfait certaints contraintes à savoir : les pixels de l’image d’une couleur donnée avec ou sans marge de tolérance.
-20)Le système doit permettre de visualiser clairement la partie sélectionné par l’utilisateur.
-21)Le système doit permettre de supprimer une partie de la séléction courante.
-22)Le Le système doit permettre d'ajouter une partie à la séléction courante.
-23)Le système doit permettre de deséléctioner à tout moment la séléction courante.
-24)Le sytème doit permettre de copier une partie de l’image.
-25)Le sytème doit permettre de couper une partie de l’image et de remplacer la région coupé par une couleur par défaut ou par une couleur défini par l'utilisateur.
-26)Le système doit permettre de coller une partie copié à un endroit spécifier par l’utilisateur.
-27)Le système doit permettre de coller une partie copié depuis une autre image.
+11)Le système doit permettre la lecture des images sous différents formats: jpg, bmp, png...
+12)Le système doit permettre de sauvegarder une image transformée, à tout moment ou l’utilisateur le désire.
+13)Le système doit permettre l'export des images sous différents formats: jpg, bmp, png...
+14)Le système doit permettre l'export des images sous un nom donné
+15)Le système doit permettre à l’utilisateur de choisir la partie d’image sur laquelle doit se faire les changements,
+16)Le système doit permettre à l’utilisateur de séléctioner une partie rectangulaire de l’image à l’aide de la souris.
+17)Le système doit permettre à l’utilisateur de séléctioner une partie délimité par tracé libre de la souris.
+18)Le système doit permettre à l’utilisateur de séléctioner une partie de l’image qui satisfait certains contraintes à savoir : les pixels de l’image d’une couleur donnée avec ou sans marge de tolérance.
+19)Le système doit permettre de visualiser clairement la partie sélectionné par l’utilisateur.
+20)Le système doit permettre de supprimer une partie de la séléction courante.
+21)Le système doit permettre d'ajouter une partie à la séléction courante.
+22)Le système doit permettre de deséléctioner à tout moment la séléction courante.
+23)Le système doit permettre de copier une partie de l’image.
+24)Le système doit permettre de couper une partie de l’image et de remplacer la région coupé par une couleur par défaut ou par une couleur défini par l'utilisateur.
+25)Le système doit permettre de coller une partie copié à un endroit spécifier par l’utilisateur.
+26)Le système doit permettre de coller une partie copié depuis une autre image.
+27)Le système doit permettre d'effectuer les transformations élémentaires sur une image:
+	   -Symétrie verticale et horizontal
+	   -Rotation de l'image par un multiple de 90°
+	   -Recadrage de l'image par découpage rectangulaire
+	   -Recadrage de l'image par agrandissement de la zone de travail
+	   -Modification de la taille de l'image
+28)Le système doit permettre d'effectuer les transformation élémentaires sur la sélection courante:
+	   -Remplissage par une couleur donné
+	   -Remplacement de couleur avec ou sans marge de tolérance
+	   -Mise en négatif
+	   -Mise en niveau de gris
+	   -Mise en noir et blanc
+	   -Ajustement de luminosité
+	   -Ajustement de contraste
+29)Le système doir permettre le traitement par lots.
+30)Le traitement par lot se fait soit en spécifiant explicitement les noms des images soit à l'aide des motifs suffisement expressifs.
+31)Le système doit permettre l'exécution des suites de commandes sous forme de scripts externes.
+32)Le système doit permettre le chargement, l'édition, la sauvegarde, le renommage et l'exécution des script.
+33)Le système doit permettre de faire un Undo/Redo des actions précédentes de manière suffisement optimisée.
+34)Le système doit permettre la gestion de transparence des images.
+35)Le système doit permettre d'effectuer des transformations avancées:
+	-Modification de la balance/de la palette des couleurs
+	-Rotation d’angle arbitraire
+	-Effets artistiques divers
