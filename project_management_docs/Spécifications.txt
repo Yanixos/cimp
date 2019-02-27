@@ -46,7 +46,7 @@ Spécifications du système :
 	   -Mise en noir et blanc
 	   -Ajustement de luminosité
 	   -Ajustement de contraste
-29)Le système doir permettre le traitement par lots.
+29)Le système doit permettre le traitement par lots.
 30)Le traitement par lot se fait soit en spécifiant explicitement les noms des images soit à l'aide des motifs suffisement expressifs.
 31)Le système doit permettre l'exécution des suites de commandes sous forme de scripts externes.
 32)Le système doit permettre le chargement, l'édition, la sauvegarde, le renommage et l'exécution des script.
