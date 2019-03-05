@@ -28,8 +28,8 @@
 
 
 ### Tâches à accomplir lors de la semaine 2:
-1. 
-2. 
-3. 
+1. Transformer l'image de decoupage à un fichier .xml en utilisant LibreOffice Draw 
+2. Faire le tutodial de SDL2
+3. Créer une premiere branche
  
 
