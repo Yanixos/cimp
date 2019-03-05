@@ -100,6 +100,7 @@ int (*cmd_func[]) (char **) =
 int main(int argc, char **argv)
 {
     char* prompt;
+    char* line;
     char** args = (char**) calloc( SIZE , sizeof(char*) );    
     command* cmd = NULL;
     
@@ -180,6 +181,8 @@ int cimp_execute(char **args)
     for (int i = 0; i < CMD_NUM; i++)                                           
             if (strcmp(args[0], cmd_name[i]) == 0) 
                 return (*cmd_func[i])(args);
+    fprintf(stderr,"cimp: cimp_execute(): failed\n");
+    return -1;
 }
 */
 int initialize_readline()
