@@ -28,7 +28,9 @@
 
 ### Tâches à accomplir lors de la semaine 2:
 1. Faire le découpage modulaire du projet
- 
+
+
+
 
 ------------
 
@@ -49,7 +51,9 @@
 
 ### Tâches à accomplir lors de la semaine 3:
 1. Détailler les fonctionnalités de chaque module
- 
+
+
+
 
 ------------
 
@@ -71,5 +75,5 @@
 
 ### Tâches à accomplir lors de la semaine 4:
 1. Codage des parties principales du Parser par Alim Yanis
-2. Codage de ... par Bareche Yassine
+2. Codage des parties principales de Windows & Images par Bareche Yassine
 3. Codage des parties principales de Selection par Bouzaouit Oussama
