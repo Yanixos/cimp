@@ -1,0 +1,104 @@
+--------------------------------------------------------
+--------------------------------------------------------
+Les spécificcations assurés par chaque modules:
+--------------------------------------------------------
+--------------------------------------------------------
+
+
+--------------------------------------------------------
+Module principal: Main 
+--------------------------------------------------------
+Son role principal est de gérer la boucle d'intéraction 
+avec l'utilisateur.
+
+Il lance une foctionalité donné demandé par l'utilisateur.
+Les fonctionalités qu'ils lance sont assuré par les autres
+modules. 
+
+--------------------------------------------------------
+Module 1: Parser
+--------------------------------------------------------
+	Son role principal est de gérer l'interface en ligne
+ de commande.
+
+ Selon la commande tapé par l'utilisateur il indique 
+ au module prinicipale qu'elle fonctionalité à excuter.
+
+
+--------------------------------------------------------
+Module 2: Windows & Images
+--------------------------------------------------------
+	Son role principal est de gérer la logique de transfert
+des images depuis la memoire secondaire vers la RAM ainsi
+que leurs affectations aux fenetres.
+
+	Il permet de charger ou sauvgarder une image selon son
+extension, et comment visualiser les images chargé sur 
+les fenetres.
+
+Specs:
+
+ouvrir/fermer une image
+afficher image
+charger/sauvgarder image
+
+--------------------------------------------------------
+Module 3: Image Effects
+--------------------------------------------------------
+	Son role principal est d'appliquer les fonctionalité 
+de modifications sur l'image toute entiere.
+
+Specs:
+
+Symetrie
+Rotation
+Recadrage
+Modification de taille
+
+--------------------------------------------------------
+Module 4: Selection
+--------------------------------------------------------
+	Son role principal est permettre de recupirer
+la région selectioné à partir d'une image donné.En fait, il
+permet de selectioner une région de l'image de plusieurs 
+manières et de y appliquer des opération en lecture voir 
+meme en ecriture.
+
+Specs:
+
+selection rectangulaire
+selct souris
+select contrainte
+visualiser la selection
+supprission de la selection
+ajouter a la selction
+deselc une select
+
+--------------------------------------------------------
+Module 5: Selection Effects
+--------------------------------------------------------
+	Son role principal est de faire des modification sur 
+une sélection d'image fourni par le module selection
+
+Specs:
+
+Remplissage par couleur
+Remplissage par couleur / marge tolérance
+mise en niveau de gris
+mise en N/B
+ajuster luminosité
+copier,coller,couper
+
+--------------------------------------------------------
+Module 6: Script Editor
+	Son role est de permettre l'utilisation d'un script de cmd
+a savoir :
+le chargement
+sauvgarde
+excution   
+
+--------------------------------------------------------
+Module 7: RegEx
+	Il permet d'avoir une reference vers les noms des fichiers
+dans le cas de traitement par lots.
+--------------------------------------------------------
