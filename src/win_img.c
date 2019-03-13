@@ -1,41 +1,15 @@
 #include "SDL.h"
-#include "SDL2/SDL_image.h"
+#include "win_img.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#define POSX 0
-#define POSY 0
-#define SIZE_X 500
-#define SIZE_Y 500
-
-typedef struct node{ // structure d'un noeud de liste de fenetres
-
-  SDL_Window *w;
-  SDL_Texture *img;
-  struct node *next;
-}node ;
-
-node * list=NULL;
-
-//Fonctions standards sur les listes 
-
-node * allocNode(SDL_Window *w,SDL_Texture *img);
-node * next(node * n);
-void addNode(node * list, SDL_Window *w,SDL_Texture *img);
-int length(struct node * l);
-node * indexx(node *l,int index);
-void freelist(node * l);
-
-// Fonctions SDL
-void sdl_init();
-SDL_Surface* load_bmp_img(char *filename);
-SDL_Window * creat_window(char *title,int high,int width);
-SDL_Renderer * window_renderer(SDL_Window *w);
-SDL_Texture* display_img_text(SDL_Renderer *r,SDL_Surface *s);
-void close_window(SDL_Window *w,SDL_Renderer *r);
+#include <string.h>
 
 
 
+
+
+
+/*
 
 int main(int argc,char *argv[]){
 
@@ -43,32 +17,25 @@ int main(int argc,char *argv[]){
     SDL_Renderer *renderer = NULL;
     SDL_Surface *surface = NULL;
     SDL_Texture *texture=NULL;
-    SDL_Window *window1 = NULL;
-    SDL_Renderer *renderer1 = NULL;
-    SDL_Surface *surface1 = NULL;
-    SDL_Texture *texture1=NULL;
-
-    int width =SIZE_X, height =SIZE_Y;
     
     sdl_init();
+    open_new("../img/test1.bmp");
+    //open_new("../img/test.bmp");
+
+    node * p=list;
+    while(p!=NULL){
+      printf("\n%d",p->id);
+      p=next(p);
+    }
     
-    window=creat_window("new window",height,width);
-    renderer=window_renderer(window);
-    surface=load_bmp_img("../img/test.bmp");
-    texture=display_img_text(renderer,surface);
-    SDL_FreeSurface(surface);// n'est pas utile car changement possible
-    addNode(list,window,texture);
-    
-    window1=creat_window("new window",1000,1000);
-    renderer1=window_renderer(window1);
-    surface1=load_bmp_img("../img/test1.bmp");
-    texture1=display_img_text(renderer1,surface1);
-    SDL_FreeSurface(surface1);// n'est pas utile car changement possible
-    addNode(list,window1,texture1);
+    printf("\nTaille de liste %d",length(list));
+    if(get_by_id(2)==NULL)
+      printf("No");
+    else
+      printf("Ys");
+  
     
     int rep=1;
-    //close_window(window,renderer);
-    //scanf("%d",&rep);
     do {
         SDL_Event e;
         if (SDL_PollEvent(&e)) {
@@ -90,11 +57,11 @@ int main(int argc,char *argv[]){
     } while (rep != 0);
     
     close_window(window,renderer);
-    close_window(window1,renderer1);
 
 
     return 0;
 }
+*/
 
 /*--------------------------Modele de liste de fenetres---------------------------------------*/
 
@@ -107,7 +74,7 @@ node * allocNode(SDL_Window *w,SDL_Texture *img){
   n->w=w;
   n->img=img;
   n->next=NULL;
-
+  printf("%p\n",n );
   return n;
 }
 
@@ -123,28 +90,60 @@ int affectNext(node * n,node * s){//Retourne 1 si mise à jour de next avec s r�
   return ((n->next=s)==s);
 }
 
-void addNode(node * list, SDL_Window *w,SDL_Texture *img){ //ajoute un noeud d'une fenetre
+void addNode(node ** list, SDL_Window *w,SDL_Texture *img){ //ajoute un noeud d'une fenetre
   node *n=allocNode(w,img);
-  if(list !=NULL) affectNext(list,n);
-  list=n;
+  affectNext(n,*list);
+  if(*list !=NULL){
+    n->id=(*list)->id +1;
+  }
+  else{
+    n->id=1;
+  }
+  
+  *list=n;
 }
 
+/*
+int deleteNode(node *list,SDL_Window *w){//supprime un noeud
+
+  if(list == NULL)
+    return -1;
+  node *p=list;
+  node *last=list;
+  
+  while(p!=NULL){
+    if(p->w==w){
+      affectNext(last,next(p));
+      if(p==list)
+        list
+      free(p);
+
+    }
+
+  }
+
+
+}
+*/
 int length(struct node * l){ //Retourne la taille de la liste des fenetres
 
   if(l==NULL)return 0;
   else return (1+length(next(l)));
 }
 
-node * indexx(node *l,int index){ // Retourne l'@ du indice eme noeud
+SDL_Texture * get_by_id(int in){ // Retourne l'@ du noeud ayant id=in NULL si introuvable
 
-  node * p=l;
-  int i=0;
-  if((index<0 || index>=length(l))|| l==NULL)return NULL;
-  else {
-
-    while(i<index){p=next(p);i++;}
-    return p;
+  if(list==NULL)
+    return NULL;
+  node * p=list;
+  while(p!=NULL){
+    if(p->id==in)
+      return p->img;
+    else
+      p=next(p);
   }
+
+  return NULL;
 }
 
 /* Lébiration d'espace occupé par une lise */
@@ -182,6 +181,11 @@ SDL_Surface* load_bmp_img(char *filename){
     }
     return surface;
 
+}
+
+int save_bmp_img(SDL_Surface *img, const char *path){
+
+  return SDL_SaveBMP(img,path);
 }
 
 
@@ -225,7 +229,7 @@ SDL_Texture* display_img_text(SDL_Renderer *renderer,SDL_Surface *surface){
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
     int w,h;
     SDL_QueryTexture(texture, NULL, NULL, &w, &h);
-    SDL_Rect dest_rect = (SDL_Rect) {POSX,POSY,2*w,2*h};
+    SDL_Rect dest_rect = (SDL_Rect) {POSX,POSY,w,h};
     SDL_RenderCopy(renderer, texture, NULL, &dest_rect);
     SDL_RenderPresent(renderer);
     return texture;
@@ -236,5 +240,25 @@ void close_window(SDL_Window *w,SDL_Renderer *r){
     SDL_DestroyWindow(w);
 }
 
+void open_new(char *path){ // que des bmp
+
+  SDL_Window *window = NULL;
+  SDL_Renderer *renderer = NULL;
+  SDL_Surface *surface = NULL;
+  SDL_Texture *texture=NULL;
+  surface=load_bmp_img(path);
+  char *nameWin=malloc(100);
+  if(list != NULL)
+    sprintf(nameWin,"Window_ID: %d ",(list->id)+1);
+  else
+    sprintf(nameWin,"Window_ID:1");
+
+  window=creat_window(nameWin,surface->h,surface->w);
+  renderer=window_renderer(window);
+  texture=display_img_text(renderer,surface);
+  SDL_FreeSurface(surface);// n'est pas utile car changement possible
+  addNode(&list,window,texture);
+
+}
 
 
