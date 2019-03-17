@@ -77,3 +77,28 @@
 1. Codage des parties principales du Parser par Alim Yanis
 2. Codage des parties principales de Windows & Images par Bareche Yassine
 3. Codage des parties principales de Selection par Bouzaouit Oussama
+
+------------
+
+
+##### DATE: 12 MARS / 14h30 à 16h30 / SALLE 2001
+##### Rapporteur: Bareche Yassine
+
+------------
+
+
+### Ordre du jour :
+#### Suivi de la semaine 4:
+1. Mise au point sur quelques détails de syntaxe du CLI.
+2. Codage des fonctionnalités principales du module Windows & Images restreintes sur les images ".bmp".
+3. Codage des parties principales du module Selection.
+
+#### Points abordés  : 
+1. Discussion sur la possibilité d'utiliser les bibliothèques SDL_image et SDL_gfx pour des extensions graphiques étendus.
+2. Travail technique pour comprendre la structure de qulques composants SDL à savoir: Surface et Texture afin de décider avec quel composant on représentera les images chargées.
+3. Mise au point sur la technique de selection par tracé libre.
+
+### Tâches à accomplir lors de la semaine 5:
+1. Codage des parties principales du Regex :Alim Yanis
+2. Compléter le module Windows & Images et commecer le codage du module Image Effect:Bareche Yassine
+3. Compléter le module Selection et commecer le codage du module Image Effect:Bareche Yassine
