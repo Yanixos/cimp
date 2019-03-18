@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include "SDL.h"
 #include <stdlib.h>
+#include "win_img.h"
 
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #define MIN(x,y) ((x)<(y)?(x):(y))
@@ -424,6 +425,10 @@ int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
   printf("success\n");
+  SDL_Window *w=NULL;
+  open_new("../img/test.bmp");
+	SDL_Texture *t=get_txt_by_id(1);
+	printf("\n%p",t);
 
   SDL_Window *window = NULL;
   window = SDL_CreateWindow("SDL2", SDL_WINDOWPOS_CENTERED,

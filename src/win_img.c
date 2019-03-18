@@ -4,9 +4,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define POSX 0
+#define POSY 0
+#define SIZE_X 500
+#define SIZE_Y 500
 
+//Fonctions internes
+//Fonctions standards sur les listes 
 
+node * allocNode(SDL_Window *w,SDL_Texture *img);
+node * next(node * n);
+void addNode(node ** list, SDL_Window *w,SDL_Texture *img);
+void deleteNode(node **list,int id);
+int length(struct node * l);
+void freelist(node * l);
 
+// Fonctions SDL
+void sdl_init();
+SDL_Surface* load_bmp_img(char *filename);
+int save_bmp_img(SDL_Surface *img,const char * path);
+SDL_Window * creat_window(char *title,int high,int width);
+SDL_Renderer * window_renderer(SDL_Window *w);
+SDL_Texture* display_img_text(SDL_Renderer *r,SDL_Surface *s);
+void close_window(SDL_Window *w,SDL_Renderer *r);
 
 
 /*
@@ -103,47 +123,68 @@ void addNode(node ** list, SDL_Window *w,SDL_Texture *img){ //ajoute un noeud d'
   *list=n;
 }
 
-/*
-int deleteNode(node *list,SDL_Window *w){//supprime un noeud
+void deleteNode(node **list,int id){//supprime un noeud selon son ID
 
-  if(list == NULL)
-    return -1;
-  node *p=list;
-  node *last=list;
+  if(list == NULL){
+    fprintf(stderr, "Echec de Supression du noeud car liste vide\n");
+    exit(1);
+  }
+  node *p=*list;
+  node *last=*list;
   
   while(p!=NULL){
-    if(p->w==w){
+    if(p->id==id){
       affectNext(last,next(p));
-      if(p==list)
-        list
+      if(p==*list)
+        *list=next(p);
       free(p);
-
-    }
-
+   }
+   else
+    last=p;
+    p=next(p);
   }
-
-
 }
-*/
 int length(struct node * l){ //Retourne la taille de la liste des fenetres
 
   if(l==NULL)return 0;
   else return (1+length(next(l)));
 }
 
-SDL_Texture * get_by_id(int in){ // Retourne l'@ du noeud ayant id=in NULL si introuvable
-
+node * find_node(int in){ // Retourne l'@ noeud ayant id=in et NULL si introuvable  
   if(list==NULL)
     return NULL;
   node * p=list;
   while(p!=NULL){
     if(p->id==in)
-      return p->img;
+      return p;
     else
       p=next(p);
   }
 
   return NULL;
+}
+void update_node(node* n,SDL_Window *w,SDL_Texture *t){
+  if (n==NULL) {
+        fprintf(stderr,"\nEchec de Mise à jour du noeud \n");
+        exit(1);
+  }
+  n->w=w;
+  n->img=t;
+}
+SDL_Texture * get_txt_by_id(int in){ // Retourne img noeud ayant id=in NULL si introuvable
+  
+  node *n=find_node(in);
+  if(n==NULL)
+    return NULL;
+  return n->img;
+}
+
+SDL_Window * get_w_by_id(int in){ // Retourne window noeud ayant id=in NULL si introuvable
+
+  node *n=find_node(in);
+  if(n==NULL)
+    return NULL;
+  return n->w;
 }
 
 /* Lébiration d'espace occupé par une lise */
@@ -155,7 +196,6 @@ void freelist(node * l){
     l=next(l);
   }
 }
-
 /*--------------------------------------------------------------------------------------------------*/
 
 void sdl_init(){
@@ -240,25 +280,76 @@ void close_window(SDL_Window *w,SDL_Renderer *r){
     SDL_DestroyWindow(w);
 }
 
-void open_new(char *path){ // que des bmp
+SDL_Surface *open_new(char *path){ // que des bmp
 
   SDL_Window *window = NULL;
   SDL_Renderer *renderer = NULL;
   SDL_Surface *surface = NULL;
   SDL_Texture *texture=NULL;
   surface=load_bmp_img(path);
-  char *nameWin=malloc(100);
+  //surface=load_img(path);
+  char *nameWin=malloc(256);
   if(list != NULL)
     sprintf(nameWin,"Window_ID: %d ",(list->id)+1);
   else
     sprintf(nameWin,"Window_ID:1");
 
-  window=creat_window(nameWin,surface->h,surface->w);
+  //Pour eviter les fenetres tres petites
+  if(surface->h >= SIZE_Y || surface->w >= SIZE_X)
+    window=creat_window(nameWin,surface->h,surface->w);
+  else{
+    //pour eviter les fentres très grandes
+    window=creat_window(nameWin,SIZE_Y,SIZE_X);
+  }
   renderer=window_renderer(window);
   texture=display_img_text(renderer,surface);
-  SDL_FreeSurface(surface);// n'est pas utile car changement possible
+  //SDL_FreeSurface(surface);// n'est pas utile car changement possible
   addNode(&list,window,texture);
+
+  return surface;
 
 }
 
+SDL_Surface * open_old(char * path,int id_win){
+
+  SDL_Window *window = NULL;
+  SDL_Renderer *renderer = NULL;
+  SDL_Surface *surface = NULL;
+  SDL_Texture *texture=NULL;
+  node *n=find_node(id_win);
+
+  if (n==NULL) {
+  /* noeud introuvable*/
+        fprintf(stderr,"\nFentre avec Id:%d introuvable\n",id_win);
+        exit(1);
+  }
+  window=n->w;
+  surface=load_bmp_img(path);
+  //Editer la taille de la fentre selon l'image
+  if(surface->h >= SIZE_Y || surface->w >= SIZE_X)
+    SDL_SetWindowSize(window,surface->w,surface->h);
+  else{
+    //pour eviter les fentres très grandes
+    SDL_SetWindowSize(window,SIZE_X,SIZE_Y);
+  }
+  renderer=SDL_GetRenderer(window);
+  if (SDL_RenderClear(renderer) != 0) {
+  /* gestion de l'echec de l'ffacement */
+        fprintf(stderr,
+                "\nImpossible d'effacer l'ancienne fenetre:  %s\n",
+                SDL_GetError()
+    );
+        exit(1);
+  }
+  texture=display_img_text(renderer,surface);
+  //Maj de la fentre
+  update_node(n,window,texture);
+  //SDL_FreeSurface(surface);// n'est pas utile car changement possible
+  return surface;
+
+}
+
+SDL_Window * test_window(){
+  return list->w;
+}
 
