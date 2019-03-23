@@ -7,6 +7,7 @@
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define ABS(x) ((x)<0?-(x):(x))
+#define SIGN(x) ((x)<0?-1:((x)>0?1:0))
 //retourne un objet de rectangle formé par les 4 points
 #define RECT(x1,y1,x2,y2) {MIN(x1,x2),MIN(y1,y2),ABS(x1-x2),ABS(y1-y2)}
 //transforme les coordonnées d'un pixel en indice d'un tableau 1D
@@ -43,10 +44,20 @@ typedef struct triangle{
 //mode de selection
 //ADD: ajout à la selection
 //SUB: supprimer de la selection
-//OVERRIDE: remplacer la selection
-enum mode {ADD, SUB, OVERRIDE};
+//OVERWRITE: remplacer la selection
+enum mode {ADD, SUB, OVERWRITE};
 
-void draw_selected_pixels(selection_node* s, short render);
+//fonctions publiques
+void new_selection_node(SDL_Window* w);
+void refresh_selection_list(SDL_Window* wl, int wl_size);
+void select_all(SDL_Window* window);
+void deselect_all(SDL_Window* window);
+void select_rect_coord(SDL_Window* window, enum mode mode, int startX, int startY, int endX, int endY);
+void select_rect(SDL_Window* window, enum mode mode);
+void select_free(SDL_Window* window, enum mode mode);
+void select_color(SDL_Window* window, Uint32 _color, int maxdiff, enum mode mode);
+void draw_selected_pixels(SDL_Window* window, short render);
+short is_selected(int pixel_x, int pixel_y, SDL_Window *window);
 
 //SDL_Renderer* renderer;
 
@@ -132,20 +143,70 @@ void free_point_list(point_node* l){
   }
 }
 
-//dessine le chemin reliant les points d'une liste de points
-void draw_path(point_node* l, SDL_Renderer *renderer){
+//algorithme de traçage d'une ligne pixel par pixel
+//source://
+//modifiée pour permettre de tracer toutes les lignes
+void draw_line(int x1, int y1, int x2, int y2, SDL_Surface* surface){
+  short invX = 0, invY = 0;
+  if(x1 > x2){
+    if(y1 > y2){
+      draw_line(x2,y2,x1,y1,surface);
+      return;
+    }
+    else{
+      invX = 1;
+      int x = x1;x1 = x2;x2 = x;
+    }
+  }
+  else if(y1 > y2){
+    draw_line(x2,y2,x1,y1,surface);
+    return;
+  }
+  SDL_LockSurface(surface);
+  int dx=x2-x1; 
+  int dy=y2-y1;
+  int StepVal=0;
+  int x,y; 
+  if(dx>dy){
+    y=y1;
+    for(x=x1; x<=x2; x++){
+      StepVal+=dy;
+      if(StepVal>=dx){
+	y++;
+	StepVal-=dx;
+      }
+      int xx = invX?(x1+x2-x):x;
+      ((Uint32*)(surface->pixels))[PIXEL_COORD(xx,y,surface->w)] = SDL_MapRGBA(surface->format,255,255,255,255);
+    }
+  }
+  else{
+    x=x1;
+    for(y=y1; y<=y2; y++){
+      StepVal+=dx;
+      if(StepVal>=dy){
+	x++;
+	StepVal-=dy;
+      }
+      int xx = invX?(x1+x2-x):x;
+      ((Uint32*)(surface->pixels))[PIXEL_COORD(xx,y,surface->w)] = SDL_MapRGBA(surface->format,255,255,255,255);
+    }
+  }
+  SDL_UnlockSurface(surface);
+}
+
+//trace le chemin reliant les points d'une liste de points
+void draw_path(point_node* l, SDL_Surface* surface){
   if(l == NULL){
     return;
   }
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   while(l->next != NULL){
-    SDL_RenderDrawLine(renderer, l->p.x, l->p.y, l->next->p.x, l->next->p.y);
+    draw_line(l->p.x, l->p.y, l->next->p.x, l->next->p.y, surface);
     l = l->next;
   }
 }
 
 //ajouter un noeud de selection lié a une fenetre
-void new_window(SDL_Window* w){
+void new_selection_node(SDL_Window* w){
   selection_node* s = malloc(sizeof(selection_node));
   if(s == NULL){
     perror("malloc ");
@@ -159,6 +220,7 @@ void new_window(SDL_Window* w){
   }
   s->next = NULL;
 
+  //au debut, considerer que tout les pixels sont selectionnés
   for(int i = 0;i<s->w_width;i++){
     for(int j = 0;j<s->w_height;j++){
       s->pixels[PIXEL_COORD(i,j,s->w_width)] = 1;
@@ -189,6 +251,7 @@ selection_node* get_sel_node(SDL_Window *window){
   return NULL;
 }
 
+//supprime un selection_node de la liste de selections
 void delete_sel_node(selection_node* s, selection_node** l){
   if(*l == NULL) return;
   if(*l == s){
@@ -236,17 +299,33 @@ void refresh_selection_list(SDL_Window* wl, int wl_size){
 
 //raffraichir le contenu du renderer d'une fenetre sans dessiner la selection
 //render = 1: actualiser l'affichage
+//fonction a remplacer par une fonction dans le module win_img
 void refresh_window(SDL_Window* window, short render){
-  //recharger l'image de fond ici
-  SDL_Renderer* renderer = SDL_GetRenderer(window);
-  SDL_SetRenderDrawColor(renderer, 50, 150, 150, 255);
-  SDL_RenderClear(renderer);
+  SDL_Surface* surface = SDL_GetWindowSurface(window);
+  SDL_Surface* image = SDL_LoadBMP("../img/test1.bmp");
+  SDL_BlitSurface(image, NULL, surface, NULL);
+  //SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 50, 150, 150, 255));
   if(render)
-    SDL_RenderPresent(renderer);
+    SDL_UpdateWindowSurface(window);
 }
 
-//deselectionner tout les pixels d'une selection
-void deselect_all(selection_node* s){
+//selectionner tout les pixels d'une fenetre
+void select_all(SDL_Window* window){
+  selection_node* s = get_sel_node(window);
+  if(s == NULL)
+    return;
+  for(int i = 0;i<s->w_width;i++){
+    for(int j = 0;j<s->w_height;j++){
+      s->pixels[PIXEL_COORD(i,j,s->w_width)] = 1;
+    }
+  }
+}
+
+//deselectionner tout les pixels d'une fenetre
+void deselect_all(SDL_Window* window){
+  selection_node* s = get_sel_node(window);
+  if(s == NULL)
+    return;
   for(int i = 0;i<s->w_width;i++){
     for(int j = 0;j<s->w_height;j++){
       s->pixels[PIXEL_COORD(i,j,s->w_width)] = 0;
@@ -254,13 +333,31 @@ void deselect_all(selection_node* s){
   }
 }
 
+void select_rect_coord(SDL_Window* window, enum mode mode, int startX, int startY, int endX, int endY){
+  selection_node* s = get_sel_node(window);
+  if(s == NULL)
+    return;
+  printf("selection de tout les pixels entre (%d, %d) et (%d, %d)\n", startX, startY, endX, endY);
+  if(mode == OVERWRITE)
+    deselect_all(window);
+  for(int i=MIN(startX,endX);i<MAX(startX,endX);i++){
+    for(int j=MIN(startY,endY);j<MAX(startY,endY);j++){
+      (s->pixels)[PIXEL_COORD(i,j,s->w_width)] = mode==SUB?0:1;
+    }
+  }
+}
+
 //selectionner un rectangle
-void select_rect(selection_node* s, enum mode mode){
+void select_rect(SDL_Window* window, enum mode mode){
+  selection_node* s = get_sel_node(window);
+  if(s == NULL)
+    return;
   int startX, startY, endX, endY;
-  SDL_Window* window = s->window;
-  SDL_Renderer* renderer = SDL_GetRenderer(window);
+  //SDL_Window* window = s->window;
+  SDL_Surface* surface = SDL_GetWindowSurface(window);
+  //SDL_Renderer* renderer = SDL_GetRenderer(window);
   //start
-  printf("start\n");
+  //printf("start\n");
   while(1){
     SDL_Event e;
     if (SDL_PollEvent(&e) &&
@@ -269,28 +366,46 @@ void select_rect(selection_node* s, enum mode mode){
       case SDL_MOUSEBUTTONDOWN:
 	startX = e.motion.x;
 	startY = e.motion.y;
-	printf("down at %d %d\n", e.motion.x, e.motion.y);
+	//printf("down at %d %d\n", e.motion.x, e.motion.y);
 	goto selection;
 	break;
       }
     }
   }
-  printf("waiting for up...\n");
+  //printf("waiting for up...\n");
  selection:
   while(1){
     SDL_Event e;
     if (SDL_PollEvent(&e)){
       switch (e.type) {
       case SDL_MOUSEMOTION:
-	//refresh_window(window, 0);
-	draw_selected_pixels(s, 0);
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 100);
+	refresh_window(window, 0);
+	draw_selected_pixels(window, 0);
+	SDL_LockSurface(surface);
+	int minX = MIN(startX, e.motion.x);
+	int maxX = MAX(startX, e.motion.x);
+	int minY = MIN(startY, e.motion.y);
+	int maxY = MAX(startY, e.motion.y);
+	for(int x = minX;x <= maxX;x++){
+	  for(int y = minY;y <= maxY;y++){
+	    Uint8 r1,g1,b1;
+	    int blend = 100;//[0-255]
+	    SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(x,y,surface->w)], surface->format, &r1, &g1, &b1);
+	    Uint8 r = r1 + (255 - r1) * blend / 255;
+	    Uint8 g = g1 + (255 - g1) * blend / 255;
+	    Uint8 b = b1 + (255 - b1) * blend / 255;
+	    ((Uint32*)(surface->pixels))[PIXEL_COORD(x,y,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
+	  }
+	}
+	SDL_UnlockSurface(surface);
+	SDL_UpdateWindowSurface(window);
+	/*SDL_SetRenderDrawColor(renderer, 255, 255, 255, 100);
 	SDL_Rect rect = RECT(startX, startY, e.motion.x, e.motion.y);
 	SDL_RenderFillRect(renderer, &rect);
-	SDL_RenderPresent(renderer);
+	SDL_RenderPresent(renderer);*/
 	break;
       case SDL_MOUSEBUTTONUP:
-	printf("up at %d %d\n", e.motion.x, e.motion.y);
+	//printf("up at %d %d\n", e.motion.x, e.motion.y);
 	endX = e.motion.x;
 	endY = e.motion.y;
 	goto end;
@@ -299,23 +414,21 @@ void select_rect(selection_node* s, enum mode mode){
     }
   }
  end:
-  if(mode == OVERRIDE)
-    deselect_all(s);
-  for(int i=MIN(startX,endX);i<MAX(startX,endX);i++){
-    for(int j=MIN(startY,endY);j<MAX(startY,endY);j++){
-      (s->pixels)[PIXEL_COORD(i,j,s->w_width)] = mode==SUB?0:1;
-    }
-  }
-  printf("end\n");
+  select_rect_coord(window, mode, startX, startY, endX, endY);
+  //printf("end\n");
 }
 
 //selectionner librement avec la souris
-void select_free(selection_node* s, enum mode mode){
-  SDL_Window* window = s->window;
-  SDL_Renderer* renderer = SDL_GetRenderer(window);
+void select_free(SDL_Window* window, enum mode mode){
+  selection_node* s = get_sel_node(window);
+  if(s == NULL)
+    return;
+  //SDL_Window* window = s->window;
+  //SDL_Renderer* renderer = SDL_GetRenderer(window);
+  SDL_Surface* surface = SDL_GetWindowSurface(window);
   point_node* p = NULL;
   //start
-  printf("start\n");
+  //printf("start\n");
   while(1){
     SDL_Event e;
     if (SDL_PollEvent(&e) &&
@@ -323,14 +436,14 @@ void select_free(selection_node* s, enum mode mode){
       switch (e.type) {
       case SDL_MOUSEBUTTONDOWN:
 	add_point_node(&p, e.motion.x, e.motion.y);
-	printf("down at %d %d\n", e.motion.x, e.motion.y);
+	//printf("down at %d %d\n", e.motion.x, e.motion.y);
 	goto selection;
 	break;
       }
     }
   }
  selection:
-  printf("waiting for up...\n");
+  //printf("waiting for up...\n");
   //draw_selected_pixels(s, 0);
   while(1){
     SDL_Event e;
@@ -338,11 +451,12 @@ void select_free(selection_node* s, enum mode mode){
       switch (e.type) {
       case SDL_MOUSEMOTION:
 	add_point_node(&p, e.motion.x, e.motion.y);
-	draw_path(p, renderer);
-	SDL_RenderPresent(renderer);
+	draw_path(p, surface);
+	//SDL_RenderPresent(renderer);
+	SDL_UpdateWindowSurface(window);
 	break;
       case SDL_MOUSEBUTTONUP:
-	printf("up at %d %d\n", e.motion.x, e.motion.y);
+	//printf("up at %d %d\n", e.motion.x, e.motion.y);
 	goto end;
 	break;
       }
@@ -362,8 +476,8 @@ void select_free(selection_node* s, enum mode mode){
     tri[i].p2 = q->next->next->p;
     q = q->next;
   }
-  if(mode == OVERRIDE)
-    deselect_all(s);
+  if(mode == OVERWRITE)
+    deselect_all(window);
   int minX=10000,maxX=0,minY=10000,maxY=0;
   q = p;
   while(q != NULL){
@@ -391,26 +505,75 @@ void select_free(selection_node* s, enum mode mode){
   }
 }
 
+int color_diff(Uint8 r1, Uint8 g1, Uint8 b1, Uint8 r2, Uint8 g2, Uint8 b2){
+  int r = r1 - r2;
+  int b = b1 - b2;
+  int g = g1 - g2;
+  //printf("dif %d %d %d\n",r,g,b);
+  return ABS(r) + ABS(b) + ABS(g);
+}
+
+Uint32 getpixel(SDL_Surface *surface, int x, int y){
+  Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
+  return *(Uint32 *)p;
+}
+
+void select_color(SDL_Window* window, Uint32 _color, int maxdiff, enum mode mode){
+  selection_node* s = get_sel_node(window);
+  if(s == NULL)
+    return;
+  //transformation pourcentage en difference de couleurs
+  maxdiff = maxdiff * (3 * 255) / 100;
+  SDL_PixelFormat *format = SDL_GetWindowSurface(s->window)->format;
+  Uint8 r,g,b;
+  SDL_GetRGB(_color, format, &r, &g, &b);
+  //printf("selecting color %d %d %d\n", r, g, b);
+  //remplacer par la surface correspondante au fenetre s->window
+  SDL_Surface* surface = SDL_GetWindowSurface(s->window);
+  for(int i = 0;i < s->w_width;i++){
+    for(int j = 0;j < s->w_height;j++){
+      Uint8 r2,g2,b2;
+      SDL_GetRGB(getpixel(surface, i, j), format, &r2, &g2, &b2);
+      int diff = color_diff(r,g,b,r2,g2,b2);
+      s->pixels[PIXEL_COORD(i,j, s->w_width)] = (diff<=maxdiff)?1:0;
+    }
+  }
+}
+
 //visualiser sur une fenetre la région selectionnée
 //la partie non selectionnée apparait sombre
-void draw_selected_pixels(selection_node* s, short render){
-  SDL_Window* window = s->window;
-  SDL_Renderer* renderer = SDL_GetRenderer(window);
+void draw_selected_pixels(SDL_Window* window, short render){
+  selection_node* s = get_sel_node(window);
+  if(s == NULL)
+    return;
+  //SDL_Window* window = s->window;
+  //SDL_Renderer* renderer = SDL_GetRenderer(window);
+  SDL_Surface* surface = SDL_GetWindowSurface(window);
   refresh_window(window,0);
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
+  //SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
+  SDL_LockSurface(surface);
   for(int i = 0;i<s->w_width;i++){
     for(int j = 0;j<s->w_height;j++){
       if(!s->pixels[PIXEL_COORD(i,j,s->w_width)]){
-	SDL_RenderDrawPoint(renderer,i,j);
+	//SDL_RenderDrawPoint(renderer,i,j);
 	//printf("not selected %d %d\n", i, j);
+	Uint8 r1,g1,b1;
+	SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)], surface->format, &r1, &g1, &b1);
+	Uint8 r = r1*4/10;
+	Uint8 g = g1*4/10;
+	Uint8 b = b1*4/10;
+	((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
       }
       else{
 	//printf("selected %d %d\n", i, j);
       }
     }
   }
+  SDL_UnlockSurface(surface);
+  /*if(render)
+    SDL_RenderPresent(renderer);*/
   if(render)
-    SDL_RenderPresent(renderer);
+    SDL_UpdateWindowSurface(window);
 }
 
 //vérifie si le pixel (x,y) est selectionné dans la fenetre donnée
@@ -424,43 +587,17 @@ short is_selected(int pixel_x, int pixel_y, SDL_Window *window){
 int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
-  printf("success\n");
-  SDL_Window *w=NULL;
-  open_new("../img/test.bmp");
-	SDL_Texture *t=get_txt_by_id(1);
-	printf("\n%p",t);
+  
+  open_new("../img/test1.bmp");
 
-  SDL_Window *window = NULL;
-  window = SDL_CreateWindow("SDL2", SDL_WINDOWPOS_CENTERED,
-			    SDL_WINDOWPOS_CENTERED,
-			    640, 480, SDL_WINDOW_SHOWN);
-  if(NULL == window){
-    fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());
-    return EXIT_FAILURE;
-  }
+  SDL_Window *window = get_w_by_id(1);
 
-  SDL_Renderer* renderer = SDL_CreateRenderer(window, -1,
-					      SDL_RENDERER_SOFTWARE);
-
-  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
-  new_window(window);
+  new_selection_node(window);
   refresh_window(window, 1);
-  //select_rect(selection_list, OVERRIDE);
-  //draw_selected_pixels(selection_list, 1);
-  select_free(selection_list, OVERRIDE);
-  draw_selected_pixels(selection_list, 1);
-  select_free(selection_list, ADD);
-  draw_selected_pixels(selection_list, 1);
-  /*select_free(selection_list, SUB);
-  draw_selected_pixels(selection_list, 1);
-  select_rect(selection_list, ADD);
-  draw_selected_pixels(selection_list, 1);
-  select_rect(selection_list, SUB);
-  draw_selected_pixels(selection_list, 1);*/
-  //select_rect(renderer);
-  printf("end\n");
-  //SDL_Delay(3000);
+  select_rect(selection_list->window, OVERWRITE);
+  draw_selected_pixels(selection_list->window, 1);
+  select_rect(selection_list->window, ADD);
+  draw_selected_pixels(selection_list->window, 1);
   int a;
   scanf("%d",&a);
   SDL_Quit();
