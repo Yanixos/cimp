@@ -102,3 +102,31 @@
 1. Codage des parties principales du Regex :Alim Yanis
 2. Compléter le module Windows & Images et commecer le codage du module Image Effect:Bareche Yassine
 3. Compléter le module Selection et commecer le codage du module Image Effect:Bareche Yassine
+
+
+------------
+
+
+##### DATE: 19 MARS / 14h30 à 16h30 / SALLE 2001
+##### Rapporteur: Alim Yanis
+
+------------
+
+
+### Ordre du jour :
+#### Suivi de la semaine 5:
+1. Module Parser : fini. 
+2. Module Windows & Images : la plus part des fonctionnalités a été faite.
+3. Module Selection : selection d'une couleur avec ou sans marge de tolerance.
+
+#### Points abordés  : 
+1. Utilisation la structure Surface au lieu de Texture
+2. Disscussion sur la méthode de test pour chaque module
+
+### Tâches à accomplir lors de la semaine 6:
+1. Commencer à faire les fonctionnalités du script editor : Alim Yanis
+2. Commencer à faire les fonctionnalités du module Images_Effects : Bouzaouit Oussama : Bareche Yassine
+3. Commencer à faire les fonctionnalités du module Selection_Effects : Bouzaouit Oussama
+
+------------
+
