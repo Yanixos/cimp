@@ -3,6 +3,7 @@
 #include "SDL.h"
 #include <stdlib.h>
 #include "win_img.h"
+#include "selection.h"
 
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #define MIN(x,y) ((x)<(y)?(x):(y))
@@ -45,7 +46,7 @@ typedef struct triangle{
 //ADD: ajout à la selection
 //SUB: supprimer de la selection
 //OVERWRITE: remplacer la selection
-enum mode {ADD, SUB, OVERWRITE};
+//enum mode {ADD, SUB, OVERWRITE};
 
 //fonctions publiques
 void new_selection_node(SDL_Window* w);
@@ -584,7 +585,7 @@ short is_selected(int pixel_x, int pixel_y, SDL_Window *window){
   return (s == NULL) || (s->pixels[PIXEL_COORD(pixel_x,pixel_y,s->w_width)] == 1);
 }
 
-int main(){
+/*int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
   
@@ -603,4 +604,4 @@ int main(){
   SDL_Quit();
   
   return EXIT_SUCCESS;
-}
+}*/
