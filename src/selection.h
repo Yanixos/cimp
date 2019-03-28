@@ -22,4 +22,6 @@ extern void select_color(SDL_Window* window, Uint32 _color, int maxdiff, enum mo
 extern void draw_selected_pixels(SDL_Window* window, short render);
 //retourne 1 si le pixel est selectionné dans une fenetre donnée
 extern short is_selected(int pixel_x, int pixel_y, SDL_Window *window);
+//calcule la distance entre 2 couleurs
+extern int color_diff(Uint8 r1, Uint8 g1, Uint8 b1, Uint8 r2, Uint8 g2, Uint8 b2);
 #endif

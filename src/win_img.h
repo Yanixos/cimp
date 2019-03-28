@@ -24,6 +24,7 @@ extern int save_bmp_img(SDL_Surface *img,const char * path);
 extern int save_png_img(SDL_Surface *img, const char *path);
 //extern int save_jpg_img(SDL_Surface *img, const char *path);
 //extern int save_jpeg_img(SDL_Surface *img, const char *path);
+extern void reset_content(SDL_Window* window, short render);
 
 //provisoire pour avancer puis one en discutera
 extern node * find_node(int in);
