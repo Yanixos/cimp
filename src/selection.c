@@ -3,6 +3,7 @@
 #include "SDL.h"
 #include <stdlib.h>
 #include "win_img.h"
+#include "selection.h"
 
 #define MAX(x,y) ((x)>(y)?(x):(y))
 #define MIN(x,y) ((x)<(y)?(x):(y))
@@ -45,7 +46,7 @@ typedef struct triangle{
 //ADD: ajout à la selection
 //SUB: supprimer de la selection
 //OVERWRITE: remplacer la selection
-enum mode {ADD, SUB, OVERWRITE};
+//enum mode {ADD, SUB, OVERWRITE};
 
 //fonctions publiques
 void new_selection_node(SDL_Window* w);
@@ -300,14 +301,14 @@ void refresh_selection_list(SDL_Window* wl, int wl_size){
 //raffraichir le contenu du renderer d'une fenetre sans dessiner la selection
 //render = 1: actualiser l'affichage
 //fonction a remplacer par une fonction dans le module win_img
-void refresh_window(SDL_Window* window, short render){
+/*void refresh_window(SDL_Window* window, short render){
   SDL_Surface* surface = SDL_GetWindowSurface(window);
   SDL_Surface* image = SDL_LoadBMP("../img/test1.bmp");
   SDL_BlitSurface(image, NULL, surface, NULL);
   //SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, 50, 150, 150, 255));
   if(render)
     SDL_UpdateWindowSurface(window);
-}
+}*/
 
 //selectionner tout les pixels d'une fenetre
 void select_all(SDL_Window* window){
@@ -379,7 +380,7 @@ void select_rect(SDL_Window* window, enum mode mode){
     if (SDL_PollEvent(&e)){
       switch (e.type) {
       case SDL_MOUSEMOTION:
-	refresh_window(window, 0);
+	reset_content(window, 0);
 	draw_selected_pixels(window, 0);
 	SDL_LockSurface(surface);
 	int minX = MIN(startX, e.motion.x);
@@ -549,7 +550,7 @@ void draw_selected_pixels(SDL_Window* window, short render){
   //SDL_Window* window = s->window;
   //SDL_Renderer* renderer = SDL_GetRenderer(window);
   SDL_Surface* surface = SDL_GetWindowSurface(window);
-  refresh_window(window,0);
+  reset_content(window,0);
   //SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
   SDL_LockSurface(surface);
   for(int i = 0;i<s->w_width;i++){
@@ -593,8 +594,8 @@ int main(){
   SDL_Window *window = get_w_by_id(1);
 
   new_selection_node(window);
-  refresh_window(window, 1);
-  select_rect(selection_list->window, OVERWRITE);
+  reset_content(window, 1);
+  select_free(selection_list->window, OVERWRITE);
   draw_selected_pixels(selection_list->window, 1);
   select_rect(selection_list->window, ADD);
   draw_selected_pixels(selection_list->window, 1);

@@ -26,7 +26,7 @@ SDL_Surface* load_bmp_img(char *filename);
 SDL_Surface* load_img(char *filename);
 SDL_Window * creat_window(char *title,int high,int width);
 void display_img(SDL_Window *window,SDL_Surface *surface);
-
+/*
 int main(int argc,char *argv[]){
 
     
@@ -68,7 +68,7 @@ int main(int argc,char *argv[]){
 
     return 0;
 }
-
+*/
 
 /*--------------------------Modele de liste de fenetres---------------------------------------*/
 
@@ -273,6 +273,19 @@ void display_img(SDL_Window *window,SDL_Surface *surface){
      SDL_Rect dest_rect = (SDL_Rect) {POSX,POSY,surface->w,surface->h};
      SDL_BlitSurface(surface, NULL, winSurface, NULL);
      SDL_UpdateWindowSurface(window);
+}
+
+//affiche sur window le contenu de l'image qui lui correspond
+void reset_content(SDL_Window* window, short render){
+  node * p=list;
+  while(p!=NULL && p->w != window){
+      p=next(p);
+  }
+  if(p == NULL) return;
+  SDL_Surface *winSurface = SDL_GetWindowSurface(window);
+  SDL_BlitSurface(p->img, NULL, winSurface, NULL);
+  if(render)
+    SDL_UpdateWindowSurface(window);
 }
 
 void close_window(int id_win){
