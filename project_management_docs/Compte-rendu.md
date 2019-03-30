@@ -99,6 +99,8 @@
 3. Mise au point sur la technique de selection par tracé libre.
 
 ### Tâches à accomplir lors de la semaine 5:
-1. Codage des parties principales du Regex :Alim Yanis
-2. Compléter le module Windows & Images et commecer le codage du module Image Effect:Bareche Yassine
-3. Compléter le module Selection et commecer le codage du module Image Effect:Bareche Yassine
+1. Concatiner les parties codés jusqu'à présent:Tous les membres.
+2. Codage des parties principales du Regex :Alim Yanis
+3. Compléter le module Windows & Images et commecer le codage du module Image Effect:Bareche Yassine
+4. Compléter le module Selection et commecer le codage du module Selection 
+Effect:Bouzaouit Oussama.
