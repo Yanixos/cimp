@@ -16,7 +16,7 @@ char *command_generator (const char *, int );
 
 /*
 //  liste des noms des commandes
-char *cmd_name[] =                                                                
+char *cmd_name[] =
 {
     "load",
     "transfer",
@@ -57,7 +57,7 @@ char *cmd_name[] =
 }
 
 // les des fonctions des commandes
-int (*cmd_func[]) (char **) =                                                    
+int (*cmd_func[]) (char **) =
 {
     &cimp_load,
     &cimp_transfer,
@@ -94,39 +94,39 @@ int (*cmd_func[]) (char **) =
     &cimp_transparency,
     &cimp_modify_pbc,
     &cimp_angle_rotate,
-    &cimp_art_effect,    
+    &cimp_art_effect,
 };
 */
 int main(int argc, char **argv)
 {
     char* prompt;
     char* line;
-    char** args = (char**) calloc( SIZE , sizeof(char*) );    
+    char** args = (char**) calloc( SIZE , sizeof(char*) );
     command* cmd = NULL;
-    
+
     initialize_readline ();                                                     // initialiser la completion automatique
-	
+
 	do
     {
-        prompt = cimp_prompt();             
+        prompt = cimp_prompt();
         line = readline (prompt);                                               // lecture du commande
-        
+
         if ( ! line  )                                                          // si il s'agit d'un CNTRL+D
             break;                                                              // on sort de la boucle
 
         /*
-        if ( parse_command (line,cmd) )
+        if ( parse (line,cmd) )
         {
             if ( cimp_execute (cmd) )
                 add_to_history(line);                                            // ajout de la commande à l'historique
         }
-        */   
+        */
     } while (1);
-    
+
     free(cmd);
     //free(args);
     fprintf(stdout,"\n");
-    
+
     exit(EXIT_FAILURE);
 }
 
@@ -139,7 +139,7 @@ char* cimp_prompt()
 
     getcwd(cwd, sizeof(cwd));
     sprintf(prompt,"%s%s%s%s",strdup(getenv("USER")),"@cimp:",cwd,"$ ");
-    
+
     if ( ( p = strstr(prompt, orig) ) != NULL )
         return replace_str(prompt,orig,p);
     else
@@ -151,7 +151,7 @@ char *replace_str(char *str,char* orig,char* p)
     char buffer[SIZE];
     char* rep = strdup("~");
 
-    strncpy(buffer, str, p-str); 
+    strncpy(buffer, str, p-str);
     buffer[p-str] = '\0';
 
     sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
@@ -164,13 +164,13 @@ void add_cmd_to_history(char *cmd)
     char* cimp_history = strdup(getenv("HOME"));
     strcat(cimp_history,"/.cimp_history");
     FILE * fp;
-    
-    if ( ( fp = fopen(cimp_history,"a+") ) == NULL)                              
+
+    if ( ( fp = fopen(cimp_history,"a+") ) == NULL)
         fprintf(stderr,"cimp: add_cmd_to_history(): fopen failed.\n");
 
-    if ( ( fprintf(fp,"%s",cmd) ) == -1 )                                   
+    if ( ( fprintf(fp,"%s",cmd) ) == -1 )
         fprintf(stderr,"cimp: add_cmd_to_history(): fprintf failed.\n");
-    
+
     if (fp)
         fclose(fp);
 }
@@ -178,8 +178,8 @@ void add_cmd_to_history(char *cmd)
 int cimp_execute(char **args)
 {
     // chercher la commande dans les commandes internes
-    for (int i = 0; i < CMD_NUM; i++)                                           
-            if (strcmp(args[0], cmd_name[i]) == 0) 
+    for (int i = 0; i < CMD_NUM; i++)
+            if (strcmp(args[0], cmd_name[i]) == 0)
                 return (*cmd_func[i])(args);
     fprintf(stderr,"cimp: cimp_execute(): failed\n");
     return -1;
@@ -194,11 +194,11 @@ int initialize_readline()
 char ** fileman_completion (const char *com, int start, int end)
 {
     char **matches;
-    matches = (char **)NULL; 
-    
+    matches = (char **)NULL;
+
     if (start == 0)
         matches = rl_completion_matches (com, command_generator);
-        
+
     return (matches);
 }
 
