@@ -16,10 +16,44 @@ void to_negative(Uint8* r, Uint8* g, Uint8* b){
   *b = 255 - (*b);
 }
 
+void apply_negative(SDL_Window* window, SDL_Surface* surface){
+  SDL_LockSurface(surface);
+  for(int i = 0;i < surface->w;i++){
+    for(int j = 0;j < surface->h;j++){
+      if(!is_selected(i, j, window)) continue;
+      Uint8 r,g,b;
+      SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)], surface->format, &r, &g, &b);
+
+      to_negative(&r, &g, &b);
+      
+      ((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
+    }
+  }
+  SDL_UnlockSurface(surface);
+  reset_content(window, 1);
+}
+
 void to_grayscale(Uint8* r, Uint8* g, Uint8* b){
   *r = ((*r) * 21 + (*g) * 72 + (*b) * 7) / 100;
   *g = *r;
   *b = *r;
+}
+
+void apply_grayscale(SDL_Window* window, SDL_Surface* surface){
+  SDL_LockSurface(surface);
+  for(int i = 0;i < surface->w;i++){
+    for(int j = 0;j < surface->h;j++){
+      if(!is_selected(i, j, window)) continue;
+      Uint8 r,g,b;
+      SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)], surface->format, &r, &g, &b);
+
+      to_grayscale(&r, &g, &b);
+      
+      ((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
+    }
+  }
+  SDL_UnlockSurface(surface);
+  reset_content(window, 1);
 }
 
 void to_bw(Uint8* r, Uint8* g, Uint8* b, int sep){
@@ -34,6 +68,23 @@ void to_bw(Uint8* r, Uint8* g, Uint8* b, int sep){
   *b = *r;
 }
 
+void apply_blackwhite(SDL_Window* window, SDL_Surface* surface, int sep){
+  SDL_LockSurface(surface);
+  for(int i = 0;i < surface->w;i++){
+    for(int j = 0;j < surface->h;j++){
+      if(!is_selected(i, j, window)) continue;
+      Uint8 r,g,b;
+      SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)], surface->format, &r, &g, &b);
+
+      to_bw(&r, &g, &b, sep);
+      
+      ((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
+    }
+  }
+  SDL_UnlockSurface(surface);
+  reset_content(window, 1);
+}
+
 void change_brightness(Uint8* r, Uint8* g, Uint8* b, int brightness){
   Uint32 red = (*r) * brightness / 100;
   Uint32 green = (*g) * brightness / 100;
@@ -41,6 +92,23 @@ void change_brightness(Uint8* r, Uint8* g, Uint8* b, int brightness){
   *r = MIN(red, 255);
   *g = MIN(green, 255);
   *b = MIN(blue, 255);
+}
+
+void apply_brightness(SDL_Window* window, SDL_Surface* surface, int brightness){
+  SDL_LockSurface(surface);
+  for(int i = 0;i < surface->w;i++){
+    for(int j = 0;j < surface->h;j++){
+      if(!is_selected(i, j, window)) continue;
+      Uint8 r,g,b;
+      SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)], surface->format, &r, &g, &b);
+
+      change_brightness(&r, &g, &b, brightness);
+      
+      ((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
+    }
+  }
+  SDL_UnlockSurface(surface);
+  reset_content(window, 1);
 }
 
 void change_contrast(Uint8* r, Uint8* g, Uint8* b, int contrast){
@@ -58,7 +126,24 @@ void change_contrast(Uint8* r, Uint8* g, Uint8* b, int contrast){
   *b = (Uint8)blue;
 }
 
-void blur_filter(SDL_Surface* surface, SDL_Window* window, int radius){
+void apply_contrast(SDL_Window* window, SDL_Surface* surface, int contrast){
+  SDL_LockSurface(surface);
+  for(int i = 0;i < surface->w;i++){
+    for(int j = 0;j < surface->h;j++){
+      if(!is_selected(i, j, window)) continue;
+      Uint8 r,g,b;
+      SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)], surface->format, &r, &g, &b);
+
+      change_contrast(&r, &g, &b, contrast);
+      
+      ((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
+    }
+  }
+  SDL_UnlockSurface(surface);
+  reset_content(window, 1);
+}
+
+void apply_blur(SDL_Window* window, SDL_Surface* surface, int radius){
   size_t pixc = sizeof(Uint32) * surface->w * surface->h;
   Uint32* src = malloc(pixc);
   memcpy(src, surface->pixels, pixc);
@@ -97,10 +182,12 @@ void blur_filter(SDL_Surface* surface, SDL_Window* window, int radius){
   SDL_UnlockSurface(surface);
 }
 
-void pixel_filter(SDL_Surface* surface, SDL_Window* window, int size){
-  size_t pixc = sizeof(Uint32) * surface->w * surface->h;
+void apply_pixel(SDL_Window* window, SDL_Surface* surface, int size){
+  printf("bytes %d\n", surface->format->BytesPerPixel);
+  size_t pixc = sizeof(Uint32) * (surface->w) * (surface->h);
   Uint32* src = malloc(pixc);
-  memcpy(src, surface->pixels, pixc);
+  memmove(src, surface->pixels, pixc);
+  printf("pass\n");
   
   SDL_LockSurface(surface);
   for(int x = 0;x < surface->w;x++){
@@ -135,6 +222,7 @@ void pixel_filter(SDL_Surface* surface, SDL_Window* window, int size){
     }
   }
   SDL_UnlockSurface(surface);
+  free(src);
 }
 
 int main(){
@@ -142,31 +230,34 @@ int main(){
     return EXIT_FAILURE;
   
   //open_new("../img/test1.bmp");
-  SDL_Surface* image = SDL_LoadBMP("../img/test1.bmp");
+  /*SDL_Surface* image = SDL_LoadBMP("../img/test1.bmp");
   
   SDL_Window *window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 750, 475, SDL_WINDOW_SHOWN );
   SDL_Surface* surface = SDL_GetWindowSurface(window);
-
-  SDL_BlitSurface(image, NULL, surface, NULL);
-  SDL_LockSurface(surface);
-  for(int i = 0;i < surface->w;i++){
-    for(int j = 0;j < surface->h;j++){
-      Uint8 r,g,b;
-      SDL_GetRGB(((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)], surface->format, &r, &g, &b);
-
-      to_negative(&r, &g, &b);
-      
-      ((Uint32*)(surface->pixels))[PIXEL_COORD(i,j,surface->w)] = SDL_MapRGB(surface->format, r, g, b);
-    }
-  }
-  SDL_UnlockSurface(surface);
+  SDL_BlitSurface(image, NULL, surface, NULL);*/
+  
   //SDL_UpdateWindowSurface(window);
   //new_selection_node(window);
   //select_free(window, OVERWRITE);
   //is_selected(0,0,window);
   //blur_filter(window, 15);
-  SDL_UpdateWindowSurface(window);
+  //SDL_UpdateWindowSurface(window);
+
   int a;
+  
+  
+  SDL_Surface* surface = open_new("../img/test1.bmp");
+  SDL_Window *window = get_w_by_id(1);
+  /*new_selection_node(window);
+
+  select_free(window, OVERWRITE);
+  draw_selected_pixels(window, 1);*/
+  
+  //scanf("%d",&a);
+  apply_pixel(window, surface, 4);
+  SDL_UpdateWindowSurface(window);
+  draw_selected_pixels(window, 1);
+  printf("done..\n");
   scanf("%d",&a);
   SDL_Quit();
   

@@ -585,7 +585,7 @@ short is_selected(int pixel_x, int pixel_y, SDL_Window *window){
   return (s == NULL) || (s->pixels[PIXEL_COORD(pixel_x,pixel_y,s->w_width)] == 1);
 }
 
-int main(){
+/*int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
   
@@ -604,4 +604,4 @@ int main(){
   SDL_Quit();
   
   return EXIT_SUCCESS;
-}
+}*/
