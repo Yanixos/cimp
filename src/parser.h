@@ -14,12 +14,12 @@ typedef struct _pixel
 
 typedef struct _command
 {
-    char** files;
-    char* color;
-    int argc;
-    int option;
-    pixel* p1;
-    pixel* p2;
+     pixel** pixels;
+     char** files;
+     char* color;
+     int argc;
+     int option;
+     unsigned int value;
 } command;
 
 int check_extension(char* );
@@ -122,7 +122,7 @@ int (*parse_func[]) (char **, command*, int) =
     &parse_execute_script,
     &parse_undo,
     &parse_redo,
-    &parse_modify_pbc,
+    &parse_modify_bpc,
     &parse_art_effect,
 };
 
