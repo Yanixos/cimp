@@ -10,36 +10,36 @@
 
 char* help[] =
 {
-     "cimp_parser(): syntax error\nopen syntax: open filename.EXT [-o filename_.EXT]\n",
-     "cimp_parser(): syntax error\nsave syntax: save filename.EXT\n",
-     "cimp_parser(): syntax error\nexport syntax: export filename.EXT -o filename.EXT\n",
-     "cimp_parser(): syntax error\nset_bg syntax: set_bg filename.EXT -c COLOR\n",
-     "cimp_parser(): syntax error\nselect syntax: select filename.EXT [-m ADD|SUB|OVERWRITE] [-p (X1,Y1) (X2,Y2)] [-c COLOR] [-t]\n",
-     "cimp_parser(): syntax error\nunselect syntax: unselect filename.EXT [-p (X1,Y1) (X2,Y2)]\n",
-     "cimp_parser(): syntax error\ncopy syntax: copy filename.EXT\n",
-	"cimp_parser(): syntax error\ncut syntax: cut filename.EXT [-f COLOR]\n",
-	"cimp_parser(): syntax error\npaste syntax: paste filename.EXT -p (X,Y)\n",
-	"cimp_parser(): syntax error\nsymetric syntax: symetric filename.EXT -d V|H\n",
-	"cimp_parser(): syntax error\nrotate syntax: rotate filename.EXT -a ANGLE\n",
-	"cimp_parser(): syntax error\nscale syntax: scale filename.EXT -p (100,200) (300,400) [-c]\n",
-	"cimp_parser(): syntax error\nresize syntax: resize filename.EXT -s (X,Y)\n",
-	"cimp_parser(): syntax error\nfill syntax: fill filename.EXT -c COLOR\n",
-	"cimp_parser(): syntax error\nreplace syntax: replace filename.EXT COLOR1 COLOR2 [-t]\n",
-	"cimp_parser(): syntax error\nnegative syntax: negative filename.EXT\n",
-	"cimp_parser(): syntax error\ngray syntax: gray filename.EXT\n",
-	"cimp_parser(): syntax error\nblack_white syntax: black_white filename.EXT\n",
-	"cimp_parser(): syntax error\nbrightness syntax: brightness filename.EXT\n",
-	"cimp_parser(): syntax error\ncontrast syntax: contrast filename.EXT\n",
-	"cimp_parser(): syntax error\nwrite_script syntax: write_script filename.cimp\n",
-	"cimp_parser(): syntax error\nload_script syntax: load_script filename.cimp\n",
-	"cimp_parser(): syntax error\nedit_script syntax: edit_script filename.cimp\n",
-	"cimp_parser(): syntax error\nsave_script syntax: save_script filename.cimp\n",
-	"cimp_parser(): syntax error\nrename_script syntax: rename_script filename.cimp -o filename_.cimp\n",
-	"cimp_parser(): syntax error\nexecute_script syntax: execute_script filename.cimp\n",
-     "cimp_parser(): syntax error\nundo syntax: undo filename.EXT\n",
-     "cimp_parser(): syntax error\nredo syntax: redo filename.EXT\n",
-     "cimp_parser(): syntax error\nmodify_bpc syntax: modify_bpc filename.EXT -m 1|2|3\n",
-     "cimp_parser(): syntax error\nart_effect syntax: art_effect filename.EXT -m 1|2|3\n",
+    "cimp_parser(): syntax error\nopen syntax: open filename.EXT [-o filename_.EXT]\n",
+    "cimp_parser(): syntax error\nsave syntax: save filename.EXT\n",
+    "cimp_parser(): syntax error\nexport syntax: export filename.EXT -o filename.EXT\n",
+    "cimp_parser(): syntax error\nset_bg syntax: set_bg filename.EXT -c COLOR\n",
+    "cimp_parser(): syntax error\nselect syntax: select filename.EXT [-m ADD|SUB|OVERWRITE] [-p (X1,Y1) (X2,Y2)] [-c COLOR [-t 0-100] ] \n",
+    "cimp_parser(): syntax error\nunselect syntax: unselect filename.EXT [-p (X1,Y1) (X2,Y2)]\n",
+    "cimp_parser(): syntax error\ncopy syntax: copy filename.EXT\n",
+    "cimp_parser(): syntax error\ncut syntax: cut filename.EXT [-f COLOR]\n",
+    "cimp_parser(): syntax error\npaste syntax: paste filename.EXT -p (X,Y)\n",
+    "cimp_parser(): syntax error\nsymetric syntax: symetric filename.EXT -d V|H\n",
+    "cimp_parser(): syntax error\nrotate syntax: rotate filename.EXT -a ANGLE\n",
+    "cimp_parser(): syntax error\nscale syntax: scale filename.EXT -p (100,200) (300,400) [-c]\n",
+    "cimp_parser(): syntax error\nresize syntax: resize filename.EXT -s (X,Y)\n",
+    "cimp_parser(): syntax error\nfill syntax: fill filename.EXT -c COLOR\n",
+    "cimp_parser(): syntax error\nreplace syntax: replace filename.EXT COLOR1 COLOR2 [-t]\n",
+    "cimp_parser(): syntax error\nnegative syntax: negative filename.EXT\n",
+    "cimp_parser(): syntax error\ngray syntax: gray filename.EXT\n",
+    "cimp_parser(): syntax error\nblack_white syntax: black_white filename.EXT -t 0-100\n",
+    "cimp_parser(): syntax error\nbrightness syntax: brightness filename.EXT -r 0-200\n",
+    "cimp_parser(): syntax error\ncontrast syntax: contrast filename.EXT -r 0-200\n",
+    "cimp_parser(): syntax error\nwrite_script syntax: write_script filename.cimp\n",
+    "cimp_parser(): syntax error\nload_script syntax: load_script filename.cimp\n",
+    "cimp_parser(): syntax error\nedit_script syntax: edit_script filename.cimp\n",
+    "cimp_parser(): syntax error\nsave_script syntax: save_script filename.cimp\n",
+    "cimp_parser(): syntax error\nrename_script syntax: rename_script filename.cimp -o filename_.cimp\n",
+    "cimp_parser(): syntax error\nexecute_script syntax: execute_script filename.cimp\n",
+    "cimp_parser(): syntax error\nundo syntax: undo filename.EXT\n",
+    "cimp_parser(): syntax error\nredo syntax: redo filename.EXT\n",
+    "cimp_parser(): syntax error\nmodify_bpc syntax: modify_bpc filename.EXT -m 1|2|3\n",
+    "cimp_parser(): syntax error\nart_effect syntax: art_effect filename.EXT -m 1|2|3\n",
 };
 
 int check_extension(char* filename)
@@ -156,9 +156,7 @@ int parse(char* line, command* cmd)
      for (  i=0; i < NUM_CMD; i++ )
      {
           if ( ! strcasecmp(args[0],cmd_name[i]) )
-          {
                return parse_func[i](args,cmd,i) ;
-          }
      }
      printf("cimp_parser(): unknown command\n");
      return -1;
@@ -197,7 +195,7 @@ int parse_open(char** args, command* cmd, int index)
 
 int parse_save(char** args, command* cmd, int index)
 {
-     //save filename.EXT\n"
+     //save filename.EXT
      if ( cmd->argc != 2 || check_extension(args[1]) )
      {
           cmd = NULL;
@@ -247,19 +245,19 @@ int parse_set_bg(char** args, command* cmd, int index)
 
 int parse_select(char** args, command* cmd, int index)
 {
-     //select filename.EXT [-m OVERWRITE|ADD|SUB] [-p (X1,Y1) (X2,Y2)] [-c COLOR] [-t]
-     cmd->p1 = (pixel*) calloc(1,sizeof(pixel));
-     cmd->p2 = (pixel*) calloc(1,sizeof(pixel));
-     pixel *t1 = cmd->p1;
-     pixel *t2 = cmd->p2;
+     //select filename.EXT [-m OVERWRITE|ADD|SUB] [-p (X1,Y1) (X2,Y2)] [-c COLOR [-t 0-100%] ]
+     cmd->pixels[0] = (pixel*) calloc(1,sizeof(pixel));
+     cmd->pixels[1] = (pixel*) calloc(1,sizeof(pixel));
+     pixel *t1 = cmd->pixels[0];
+     pixel *t2 = cmd->pixels[1];
 
      if (
-          ( (cmd->argc <= 1) || (cmd->argc == 3  && strcmp(args[2],"-t")) ) || \
-          ( (cmd->argc >= 2) && (!strcmp(args[cmd->argc-2],"-p")) ) || \
+          ( (cmd->argc <= 1) ||  (cmd->argc >= 12) )|| \
           ( (cmd->argc >= 2) && (check_extension(args[1])) )  || \
           ( (cmd->argc >= 4) && (!strcmp(args[2],"-m")) && (strcasecmp(args[3],"ADD")) && (strcasecmp(args[3],"SUB")) && (strcasecmp(args[3],"OVERWRITE")) ) || \
           ( (cmd->argc >= 5) && (!strcmp(args[2],"-p")) && ( (check_pixel(args[3],t1)) || (check_pixel(args[4],t2))) )|| \
-          ( (cmd->argc >= 7 )&& (!strcmp(args[4],"-p")) && ( (check_pixel(args[5],t1)) || (check_pixel(args[6],t2))) )
+          ( (cmd->argc >= 7) && (!strcmp(args[4],"-p")) && ( (check_pixel(args[5],t1)) || (check_pixel(args[6],t2))) )|| \
+          ( (cmd->argc >= 6) && (!strcmp(args[cmd->argc-4],"-c") && ( strcmp(args[cmd->argc-2],"-t") || atoi(args[cmd->argc -2]) < 1 || atoi(args[cmd->argc -2]) > 100 ) ))
         )
 
      {
@@ -289,25 +287,22 @@ int parse_select(char** args, command* cmd, int index)
      if ( cmd->argc >= 4 &&  !strcmp(args[2],"-p") )
           cmd->option += 10;
 
-     if ( cmd->argc >= 3 && !strcmp(args[cmd->argc -1],"-t") )
-          cmd->option += 100;
-
      if ( cmd->argc >= 4 && !strcmp(args[cmd->argc-2],"-c") )
           cmd->color = strdup(args[cmd->argc-1]);
 
-     if ( cmd->argc >= 4 && !strcmp(args[cmd->argc-3],"-c") )
-          cmd->color = strdup(args[cmd->argc-2]);
+     if ( cmd->argc >= 6 && !strcmp(args[cmd->argc -2],"-t") )
+          cmd->value = atoi(args[cmd->argc -2]);
 
      return 0;
-
 }
+
 int parse_unselect(char** args, command* cmd, int index)
 {
      //unselect filename.EXT [-p (X1,Y1) (X2,Y2)]
-     cmd->p1 = (pixel*) calloc(1,sizeof(pixel));
-     cmd->p2 = (pixel*) calloc(1,sizeof(pixel));
-     pixel *t1 = cmd->p1;
-     pixel *t2 = cmd->p2;
+     cmd->pixels[0] = (pixel*) calloc(1,sizeof(pixel));
+     cmd->pixels[1] = (pixel*) calloc(1,sizeof(pixel));
+     pixel *t1 = cmd->pixels[0];
+     pixel *t2 = cmd->pixels[1];
 
      if ( (cmd->argc != 2 && cmd->argc != 5) || \
         ( (check_extension(args[1]))) || \
@@ -342,6 +337,7 @@ int parse_cut(char** args, command* cmd, int index)
           return -1;
      }
 
+     cmd->files[0] = strdup(args[1]);
      if (cmd->argc == 2)
           cmd->option = 1;
      else
@@ -349,15 +345,13 @@ int parse_cut(char** args, command* cmd, int index)
           cmd->option = 2;
           cmd->color = strdup(args[3]);
      }
-
-     cmd->files[0] = strdup(args[1]);
      return 0;
 }
 int parse_paste(char** args, command* cmd, int index)
 {
      //paste filename.EXT -p (X,Y)
-     cmd->p1 = (pixel*) calloc(1,sizeof(pixel));
-     pixel *t1 = cmd->p1;
+     cmd->pixels[0] = (pixel*) calloc(1,sizeof(pixel));
+     pixel *t1 = cmd->pixels[0];
 
      if ( cmd-> argc != 4 || check_extension(args[1]) || strcmp(args[2],"-p") || check_pixel(args[3],t1) )
      {
@@ -382,15 +376,15 @@ int parse_symetric(char** args, command* cmd, int index)
 
      cmd->files[0] = strdup(args[1]);
      if ( !strcasecmp(args[3],"V") )
-          cmd->option = 1;
+          cmd->value = 1;
      else
-          cmd->option = 2;
+          cmd->value = 2;
      return 0;
 }
 
 int parse_rotate(char** args, command* cmd, int index)
 {
-     // rotate filename.EXT -a ANGLE\n",
+     // rotate filename.EXT -a ANGLE
      if ( cmd-> argc != 4 || check_extension(args[1]) || strcmp(args[2],"-a") || ! atoi(args[3]) )
      {
           cmd = NULL;
@@ -398,17 +392,17 @@ int parse_rotate(char** args, command* cmd, int index)
           return -1;
      }
      cmd->files[0] = strdup(args[1]);
-     cmd->option = atoi(args[3]);
+     cmd->value = atoi(args[3]);
      return 0;
 }
 
 int parse_scale(char** args, command* cmd, int index)
 {
-     // scale filename.EXT -p (100,200) (300,400) [-c]\n",
-     cmd->p1 = (pixel*) calloc(1,sizeof(pixel));
-     cmd->p2 = (pixel*) calloc(1,sizeof(pixel));
-     pixel *t1 = cmd->p1;
-     pixel *t2 = cmd->p2;
+     // scale filename.EXT -p (100,200) (300,400) [-c]
+     cmd->pixels[0] = (pixel*) calloc(1,sizeof(pixel));
+     cmd->pixels[1] = (pixel*) calloc(1,sizeof(pixel));
+     pixel *t1 = cmd->pixels[0];
+     pixel *t2 = cmd->pixels[1];
 
      if ( (cmd->argc != 5 && cmd->argc != 6) ||  check_extension(args[1]) || \
           strcmp(args[2],"-p") || check_pixel(args[3],t1) || check_pixel(args[4],t2) || \
@@ -431,8 +425,8 @@ int parse_scale(char** args, command* cmd, int index)
 int parse_resize(char** args, command* cmd, int index)
 {
      // resize filename.EXT -s (X,Y)
-     cmd->p1 = (pixel*) calloc(1,sizeof(pixel));
-     pixel *t1 = cmd->p1;
+     cmd->pixels[0] = (pixel*) calloc(1,sizeof(pixel));
+     pixel *t1 = cmd->pixels[0];
 
      if ( cmd-> argc != 4 || check_extension(args[1]) || strcmp(args[2],"-s") || check_pixel(args[3],t1) )
      {
@@ -464,7 +458,7 @@ int parse_replace(char** args, command* cmd, int index)
 {
      // replace filename.EXT COLOR1 COLOR2 [-t]
      if ( (cmd->argc != 4 && cmd->argc != 5) ||  check_extension(args[1]) || \
-          ( cmd->argc == 5 && strcmp(args[4],"-t") ) )
+          (cmd->argc == 5 && strcmp(args[4],"-t")) )
      {
           cmd = NULL;
           fprintf(stderr,"%s",help[index]);
@@ -511,14 +505,21 @@ int parse_black_white(char** args, command* cmd, int index)
 
 int parse_brightness(char** args, command* cmd, int index)
 {
-     // brightness filename.EXT
-     return parse_negative(args,cmd,index);
-}
+     // brightness filename.EXT -r 0-200
+     if ( cmd-> argc != 4 || check_extension(args[1]) || strcmp(args[2],"-r") || atoi(args[3]) < 1 || atoi(args[3]) > 200)
+     {
+          cmd = NULL;
+          fprintf(stderr,"%s",help[index]);
+          return -1;
+     }
+     cmd->files[0] = strdup(args[1]);
+     cmd->value = atoi(args[3]);
+     return 0;}
 
 int parse_contrast(char** args, command* cmd, int index)
 {
-     // contrast filename.EXT
-     return parse_negative(args,cmd,index);
+     // contrast filename.EXT -r 0-200
+     return parse_brightness(args,cmd,index);
 }
 
 int parse_write_script(char** args, command* cmd, int index)
@@ -603,13 +604,14 @@ int parse_modify_bpc(char** args, command* cmd, int index)
 int parse_art_effect(char** args, command* cmd, int index)
 {
      // art_effect filename.EXT -m 1|2|3
-     return parse_modify_pbc(args,cmd,index);
+     return parse_modify_bpc(args,cmd,index);
 }
 
 int main()
 {
      command* cmd = (command*) calloc(1,sizeof(command));
-     cmd->files = (char**) calloc(4,sizeof(char*));
+     cmd->files = (char**) calloc(2,sizeof(char*));
+     cmd->pixels = (pixel**) calloc(2,sizeof(pixel*));
      char line[SIZE];
      while(1)
      {
