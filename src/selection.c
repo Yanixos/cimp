@@ -214,7 +214,7 @@ void new_selection_node(SDL_Window* w){
   }
   s->window = w;
   SDL_GetWindowSize(w,&(s->w_width),&(s->w_height));
-  printf("new window %d %d\n",s->w_width,s->w_height);
+  //printf("new window %d %d\n",s->w_width,s->w_height);
   s->pixels = malloc(sizeof(short)*(s->w_width)*(s->w_height));
   if(s == NULL){
     perror("malloc ");
@@ -276,11 +276,16 @@ void delete_sel_node(selection_node* s, selection_node** l){
 //actualise la liste des selection/fenetre
 //si une fenetre n'a pas de selection_node, il sera créé
 //si la fenetre d'un selection_node n'existe plus, il sera libéré
-void refresh_selection_list(SDL_Window* wl, int wl_size){
+void refresh_selection_list(){
+  SDL_Window* wl;
+  int wl_size;
+  //recuperer le tableau des fenetres existantes ici
+  //...
+  
   //création des selection_node pour les nouvelle fenetres
-  /*for(int i = 0;i < wl_size;i++){
+  for(int i = 0;i < wl_size;i++){
     if(get_sel_node(&(wl[i])) == NULL){
-      new_window(&(wl[i]));
+      new_selection_node(&(wl[i]));
     }
   }
 
@@ -288,14 +293,29 @@ void refresh_selection_list(SDL_Window* wl, int wl_size){
   //ou des fenetres modifiées
   selection_node* s = selection_list;
   while(s != NULL){
+    selection_node* next = s->next;
     SDL_Window* win = s->window;
     for(int i = 0;i < wl_size;i++){
       if(win == &(wl[i])){
 	int w, h;
-	
+	SDL_GetWindowSize(win, &w, &h);
+	//taille de fenetre changée, recréer selection node
+	if((w != s->w) || (h != s->h)){
+	  new_selection_node(win);
+	  goto delete;
+	}
+	else{
+	  goto tonext;
+	}
       }
     }
-  }*/
+    //fenetre n'existe plus ou taille changée
+  delete:
+    delete_sel_node(s, selection_list);
+  tonext:
+    s = next;
+    continue;
+  }
 }
 
 //raffraichir le contenu du renderer d'une fenetre sans dessiner la selection
