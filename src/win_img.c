@@ -13,19 +13,19 @@
 //Fonctions internes
 //Fonctions standards sur les listes 
 
-node * allocNode(SDL_Window *w,SDL_Surface *img);
+node * allocNode(SDL_Window *w,SDL_Surface *img, char *name);
 node * next(node * n);
-void addNode(node ** list, SDL_Window *w,SDL_Surface *img);
+void addNode(node ** list, SDL_Window *w,SDL_Surface *img,char *name);
 void deleteNode(node **list,int id);
 int length(struct node * l);
 void freelist(node * l);
 
 // Fonctions SDL
 void sdl_init();
-SDL_Surface* load_bmp_img(char *filename);
 SDL_Surface* load_img(char *filename);
 SDL_Window * creat_window(char *title,int high,int width);
 void display_img(SDL_Window *window,SDL_Surface *surface);
+
 /*
 int main(int argc,char *argv[]){
 
@@ -38,9 +38,11 @@ int main(int argc,char *argv[]){
     open_new("../img/test.bmp");
     
     printf("\nTaille de liste %d",length(list));
-    open_old("../img/test.bmp",2);
+    open_old("../img/test.bmp",1);
 
-    save_png_img(get_sf_by_id(1),"../img/out.png");
+    printf("id de ../img/test.bmp  est %d \n", get_id_name("../img/test.bmp"));
+
+    //save_png_img(get_sf_by_id(1),"../img/out.png");
     
     int rep=1;
     do {
@@ -74,14 +76,16 @@ int main(int argc,char *argv[]){
 
 /*Allocation avec initialisation d'un noeud */
 
-node * allocNode(SDL_Window *w,SDL_Surface *img){
+node * allocNode(SDL_Window *w,SDL_Surface *img, char *name){
 
   node * n;
   n=malloc(sizeof(node));
   n->w=w;
   n->img=img;
+  n->name=malloc(sizeof(name));
+  strcpy(n->name,name);
   n->next=NULL;
-  printf("%p\n",n );
+
   return n;
 }
 
@@ -97,8 +101,8 @@ int affectNext(node * n,node * s){//Retourne 1 si mise à jour de next avec s r�
   return ((n->next=s)==s);
 }
 
-void addNode(node ** list, SDL_Window *w,SDL_Surface * img){ //ajoute un noeud d'une fenetre
-  node *n=allocNode(w,img);
+void addNode(node ** list, SDL_Window *w,SDL_Surface * img,char *name){ //ajoute un noeud d'une fenetre
+  node *n=allocNode(w,img,name);
   affectNext(n,*list);
   if(*list !=NULL){
     n->id=(*list)->id +1;
@@ -150,13 +154,19 @@ node * find_node(int in){ // Retourne l'@ noeud ayant id=in et NULL si introuvab
 
   return NULL;
 }
-void update_node(node* n,SDL_Window *w,SDL_Surface *t){
+void update_node(node* n,SDL_Window *w,SDL_Surface *t,char *name){
   if (n==NULL) {
         fprintf(stderr,"\nEchec de Mise à jour du noeud \n");
         exit(1);
   }
   n->w=w;
   n->img=t;
+  n->name=realloc(n->name,sizeof(name));
+  if(n->name == NULL){
+    fprintf(stderr, "\nRealloc erreur\n");
+    exit(-1);
+  }
+  strcpy(n->name,name);
 }
 SDL_Surface * get_sf_by_id(int in){ // Retourne img noeud ayant id=in NULL si introuvable
   
@@ -172,6 +182,20 @@ SDL_Window * get_w_by_id(int in){ // Retourne window noeud ayant id=in NULL si i
   if(n==NULL)
     return NULL;
   return n->w;
+}
+
+int get_id_name(char *name){ //Retourne -1 si inexistant
+
+  node *n=list;
+  if(n==NULL)
+    return -1;
+  while(n!=NULL){
+    if(!strcmp(n->name,name))
+      return n->id;
+    else
+      n=next(n);
+  }
+  return -1;
 }
 
 /* Lébiration d'espace occupé par une lise */
@@ -195,19 +219,6 @@ void sdl_init(){
         exit(1);
     }
     //atexit(SDL_Quit);
-}
-
-SDL_Surface* load_bmp_img(char *filename){
-   
-     SDL_Surface *surface = SDL_LoadBMP(filename);
-    if (surface == NULL) {
-	fprintf(stderr,"/nImpossible de charger l'image : %s\n", 
-		SDL_GetError()
-		);
-	exit(1);
-    }
-    return surface;
-
 }
 
 SDL_Surface* load_img(char *filename){
@@ -310,7 +321,7 @@ SDL_Surface *open_new(char *path){ // que des bmp
 
   window=creat_window(nameWin,surface->h,surface->w);
   display_img(window,surface);
-  addNode(&list,window,surface);
+  addNode(&list,window,surface,path);
 
   return surface;
 
@@ -335,12 +346,27 @@ SDL_Surface * open_old(char * path,int id_win){
   SDL_SetWindowSize(window,surface->w,surface->h);
   display_img(window,surface);
   //Maj de la fentre
-  update_node(n,window,surface);
+  update_node(n,window,surface,path);
   return surface;
 
+}
+
+void get_all_windows(SDL_Window** w, int* size){
+  *size = length(list);
+  if(*size == 0){
+    *w = NULL;
+    return;
+  }
+  *w = malloc(*size * sizeof(node));
+  node* n = list;
+  for(int i = 0;i < *size;i++){
+    w[i] = n->w;
+    n = n->next;
+  }
 }
 
 SDL_Window * test_window(){
   return list->w;
 }
+
 
