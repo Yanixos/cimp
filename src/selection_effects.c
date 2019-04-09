@@ -487,7 +487,7 @@ void paste(SDL_Window* window, SDL_Surface* surface, int x, int y){
   reset_content(window, 1);
 }
 
-int main(){
+/*int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
   
@@ -513,3 +513,4 @@ int main(){
   
   return EXIT_SUCCESS;
 }
+*/
