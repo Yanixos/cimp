@@ -31,7 +31,7 @@ extern void get_all_windows(SDL_Window** w, int* size);
 
 //provisoire pour avancer puis one en discutera
 extern node * find_node(int in);
-extern void update_node(node* n,SDL_Window *w,SDL_Surface *t);
+extern void update_node(node* n,SDL_Window *w,SDL_Surface *t,char *name);
 void close_window(int id_win);
 extern SDL_Window * test_window();
 
