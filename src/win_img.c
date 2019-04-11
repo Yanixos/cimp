@@ -17,6 +17,8 @@ node * allocNode(SDL_Window *w,SDL_Surface *img, char *name);
 node * next(node * n);
 void addNode(node ** list, SDL_Window *w,SDL_Surface *img,char *name);
 void deleteNode(node **list,int id);
+node * find_node(int in);
+void update_node(node* n,SDL_Window *w,SDL_Surface *t,char *name);
 int length(struct node * l);
 void freelist(node * l);
 
@@ -25,6 +27,11 @@ void sdl_init();
 SDL_Surface* load_img(char *filename);
 SDL_Window * creat_window(char *title,int high,int width);
 void display_img(SDL_Window *window,SDL_Surface *surface);
+int save_bmp_img(SDL_Surface *img,const char * path);
+int save_png_img(SDL_Surface *img, const char *path);
+//int save_jpg_img(SDL_Surface *img, const char *path);
+//int save_jpeg_img(SDL_Surface *img, const char *path);
+
 
 /*
 int main(int argc,char *argv[]){
@@ -239,20 +246,57 @@ int save_bmp_img(SDL_Surface *img, const char *path){
   return SDL_SaveBMP(img,path);
 }
 
+int save_bmp(int id,const char *path){
+
+  SDL_Surface *s=get_sf_by_id(id);
+  if(s!=NULL)
+    return save_bmp_img(s,path);
+  else
+    return -1;
+}
+
 int save_png_img(SDL_Surface *img, const char *path){
 
   return IMG_SavePNG(img,path);
 }
+
+int save_png(int id,const char *path){
+
+  SDL_Surface *s=get_sf_by_id(id);
+  if(s!=NULL)
+    return save_png_img(s,path);
+  else
+    return -1;
+}
+
 /*
 int save_jpg_img(SDL_Surface *img, const char *path){
 
   return IMG_SaveJPG(img,path);
 }
 
+int save_jpg(int id,const char *path){
+
+  SDL_Surface *s=get_sf_by_id(id);
+  if(s!=NULL)
+    return save_jpg_img(s,path);
+  else
+    return -1;
+}
+
 
 int save_jpeg_img(SDL_Surface *img, const char *path){
 
   return IMG_SaveJPEG(img,path);
+}
+
+int save_jpeg(int id,const char *path){
+
+  SDL_Surface *s=get_sf_by_id(id);
+  if(s!=NULL)
+    return save_jpeg_img(s,path);
+  else
+    return -1;
 }
 
 */
@@ -303,6 +347,7 @@ void close_window(int id_win){
     node *n=find_node(id_win);
     SDL_FreeSurface(n->img);
     SDL_DestroyWindow(n->w);
+    free(n->name);
     deleteNode(&list,id_win);
 }
 
@@ -365,8 +410,21 @@ void get_all_windows(SDL_Window** w, int* size){
   }
 }
 
+void set_bg_color(int r,int g,int b){
+
+  SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
+  background=SDL_MapRGB(format,(Uint8)r,(Uint8)g,(Uint8)b);
+  SDL_FreeFormat(format);
+}
+
+void get_bg_color(int *r,int *g,int *b){
+
+  SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
+  SDL_GetRGB(background,format,(Uint8 *)r,(Uint8 *)g,(Uint8 *)b);
+  SDL_FreeFormat(format);
+}
+
 SDL_Window * test_window(){
   return list->w;
 }
-
 
