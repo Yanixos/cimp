@@ -87,6 +87,44 @@ void set_pixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
   }
 }
 
+void apply_fill(int wid, int r, int g, int b){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
+  SDL_LockSurface(surface);
+  for(int i = 0;i < surface->w;i++){
+    for(int j = 0;j < surface->h;j++){
+      if(!is_selected(i, j, window)) continue;
+
+      set_pixel(surface, i, j, SDL_MapRGB(surface->format, (Uint8)r, (Uint8)g, (Uint8)b));
+    }
+  }
+  SDL_UnlockSurface(surface);
+  reset_content(window, 1);
+}
+
+void apply_replace_color(int wid, int sr, int sg, int sb, int dr, int dg, int db, int maxdiff){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+
+  maxdiff = maxdiff * (3 * 255) / 100;
+  
+  SDL_LockSurface(surface);
+  for(int i = 0;i < surface->w;i++){
+    for(int j = 0;j < surface->h;j++){
+      if(!is_selected(i, j, window)) continue;
+      Uint8 r,g,b;
+      SDL_GetRGB(get_pixel(surface, i, j), surface->format, &r, &g, &b);
+      if(color_diff((Uint8)sr, (Uint8)sg, (Uint8)sb, r, g, b) <= maxdiff)
+	set_pixel(surface, i, j, SDL_MapRGB(surface->format, (Uint8)dr, (Uint8)dg, (Uint8)db));
+    }
+  }
+  SDL_UnlockSurface(surface);
+  reset_content(window, 1);
+}
+
 //transforme une couleur en sa couleur négative
 void to_negative(Uint8* r, Uint8* g, Uint8* b){
   *r = 255 - (*r);
@@ -95,7 +133,11 @@ void to_negative(Uint8* r, Uint8* g, Uint8* b){
 }
 
 //appliquer l'effet négative sur une image
-void apply_negative(SDL_Window* window, SDL_Surface* surface){
+void apply_negative(int wid){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -120,7 +162,11 @@ void to_grayscale(Uint8* r, Uint8* g, Uint8* b){
 }
 
 //appliquer l'effet niveaux de gris sur une image
-void apply_grayscale(SDL_Window* window, SDL_Surface* surface){
+void apply_grayscale(int wid){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -160,7 +206,11 @@ void to_bw(Uint8* r, Uint8* g, Uint8* b, int sep){
 }
 
 //appliquer l'effet noir et blanc sur une image
-void apply_blackwhite(SDL_Window* window, SDL_Surface* surface, int sep){
+void apply_blackwhite(int wid, int sep){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -191,7 +241,11 @@ void change_brightness(Uint8* r, Uint8* g, Uint8* b, int brightness){
 }
 
 //changer la luminosité d'une image
-void apply_brightness(SDL_Window* window, SDL_Surface* surface, int brightness){
+void apply_brightness(int wid, int brightness){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -229,7 +283,11 @@ void change_contrast(Uint8* r, Uint8* g, Uint8* b, int contrast){
 }
 
 //changer le contrast d'une image
-void apply_contrast(SDL_Window* window, SDL_Surface* surface, int contrast){
+void apply_contrast(int wid, int contrast){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -248,7 +306,11 @@ void apply_contrast(SDL_Window* window, SDL_Surface* surface, int contrast){
 
 //appliquer l'effet de flou sur une image
 //radius étant le rayon de l'effet
-void apply_blur(SDL_Window* window, SDL_Surface* surface, int radius){
+void apply_blur(int wid, int radius){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+
   //création d'une copy temporaire de surface
   SDL_Surface *tmp = SDL_CreateRGBSurface(0, surface->w, surface->h, 32, 0, 0, 0, 0);
   SDL_BlitSurface(surface, NULL, tmp, NULL);
@@ -300,7 +362,11 @@ void apply_blur(SDL_Window* window, SDL_Surface* surface, int radius){
 
 //appliquer l'effet de pixelisation sur une image
 //size étant la taille du grand pixel de l'effet
-void apply_pixel(SDL_Window* window, SDL_Surface* surface, int size){
+void apply_pixel(int wid, int size){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
   //création d'une copie temporaire de surface
   SDL_Surface *tmp = SDL_CreateRGBSurface(0, surface->w, surface->h, 32, 0, 0, 0, 0);
   SDL_BlitSurface(surface, NULL, tmp, NULL);
@@ -356,7 +422,11 @@ void apply_pixel(SDL_Window* window, SDL_Surface* surface, int size){
 }
 
 //copier la zone selectionnée dans une fenetre
-void copy(SDL_Window* window, SDL_Surface* surface){
+void copy(int wid){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
   //position de presse-papier
   int cb_x = surface->w;
   int cb_y = surface->h;
@@ -411,7 +481,13 @@ void copy(SDL_Window* window, SDL_Surface* surface){
 
 //couper la zone selectionnée d'une image
 //background: la couleur qui remplacera les pixels coupés
-void cut(SDL_Window* window, SDL_Surface* surface, Uint32 background){
+void cut(int wid, int r, int g, int b){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+
+  Uint32 background = SDL_MapRGB(surface->format, (Uint32)r, (Uint32)g, (Uint32)b);
+  
   //meme principe que celui de la fonction de copiage
   int cb_x = surface->w;
   int cb_y = surface->h;
@@ -467,7 +543,11 @@ void cut(SDL_Window* window, SDL_Surface* surface, Uint32 background){
 
 //coller le presse-papier dans une image
 //à partir des coordonnées (x, y)
-void paste(SDL_Window* window, SDL_Surface* surface, int x, int y){
+void paste(int wid, int x, int y){
+  SDL_Window* window = get_w_by_id(wid);
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(window == NULL || surface == NULL) return;
+  
   if(clipboard == NULL || x > surface->w || y > surface->h) return;
   //extremités de la zone qui sera remplie par le presse-papier
   int startX = MAX(0, x);
@@ -494,18 +574,15 @@ void paste(SDL_Window* window, SDL_Surface* surface, int x, int y){
   open_new("../img/test1.bmp");
 
   SDL_Window *window = get_w_by_id(1);
-  SDL_Surface* surface = get_sf_by_id(1);
+  
   new_selection_node(window);
-  select_free(window, OVERWRITE);
-  cut(window, surface, SDL_MapRGB(surface->format, 255, 255, 255));
-  paste(window, surface, 200, 400);
-  paste(window, surface, -50, -50);
-  paste(window, surface, 700, 100);
-  draw_selected_pixels(window, 1);
-  select_free(window, OVERWRITE);
-  copy(window, surface);
-  paste(window, surface, 200, 200);
-  draw_selected_pixels(window, 1);
+  select_free(1, OVERWRITE);
+  apply_replace_color(1, 255, 255, 255, 0, 255, 255, 30);
+  draw_selected_pixels(1, 1);
+  select_free(1, OVERWRITE);
+  copy(1);
+  paste(1, 200, 200);
+  draw_selected_pixels(1, 1);
   printf("done..\n");
   int a;
   scanf("%d",&a);

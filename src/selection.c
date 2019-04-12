@@ -50,14 +50,14 @@ typedef struct triangle{
 
 //fonctions publiques
 void new_selection_node(SDL_Window* w);
-void refresh_selection_list(SDL_Window* wl, int wl_size);
-void select_all(SDL_Window* window);
-void deselect_all(SDL_Window* window);
-void select_rect_coord(SDL_Window* window, enum mode mode, int startX, int startY, int endX, int endY);
-void select_rect(SDL_Window* window, enum mode mode);
-void select_free(SDL_Window* window, enum mode mode);
-void select_color(SDL_Window* window, Uint32 _color, int maxdiff, enum mode mode);
-void draw_selected_pixels(SDL_Window* window, short render);
+void refresh_selection_list();
+void select_all(int wid);
+void deselect_all(int wid);
+void select_rect_coord(int wid, enum mode mode, int startX, int startY, int endX, int endY);
+void select_rect(int wid, enum mode mode);
+void select_free(int wid, enum mode mode);
+void select_color(int wid, int r, int g, int b, int maxdiff, enum mode mode);
+void draw_selected_pixels(int wid, short render);
 short is_selected(int pixel_x, int pixel_y, SDL_Window *window);
 
 //SDL_Renderer* renderer;
@@ -280,12 +280,12 @@ void refresh_selection_list(){
   SDL_Window* wl;
   int wl_size;
   //recuperer le tableau des fenetres existantes ici
-  //...
+  get_all_windows(&wl, &wl_size);
   
   //création des selection_node pour les nouvelle fenetres
   for(int i = 0;i < wl_size;i++){
-    if(get_sel_node(&(wl[i])) == NULL){
-      new_selection_node(&(wl[i]));
+    if(get_sel_node((&wl)[i]) == NULL){
+      new_selection_node((&wl)[i]);
     }
   }
 
@@ -296,11 +296,11 @@ void refresh_selection_list(){
     selection_node* next = s->next;
     SDL_Window* win = s->window;
     for(int i = 0;i < wl_size;i++){
-      if(win == &(wl[i])){
+      if(win == ((&wl)[i])){
 	int w, h;
 	SDL_GetWindowSize(win, &w, &h);
 	//taille de fenetre changée, recréer selection node
-	if((w != s->w) || (h != s->h)){
+	if((w != s->w_width) || (h != s->w_height)){
 	  new_selection_node(win);
 	  goto delete;
 	}
@@ -311,7 +311,7 @@ void refresh_selection_list(){
     }
     //fenetre n'existe plus ou taille changée
   delete:
-    delete_sel_node(s, selection_list);
+    delete_sel_node(s, &selection_list);
   tonext:
     s = next;
     continue;
@@ -331,7 +331,9 @@ void refresh_selection_list(){
 }*/
 
 //selectionner tout les pixels d'une fenetre
-void select_all(SDL_Window* window){
+void select_all(int wid){
+  SDL_Window* window = get_w_by_id(wid);
+  if(window == NULL) return;
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -343,7 +345,10 @@ void select_all(SDL_Window* window){
 }
 
 //deselectionner tout les pixels d'une fenetre
-void deselect_all(SDL_Window* window){
+void deselect_all(int wid){
+  SDL_Window* window = get_w_by_id(wid);
+  if(window == NULL) return;
+  
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -354,13 +359,16 @@ void deselect_all(SDL_Window* window){
   }
 }
 
-void select_rect_coord(SDL_Window* window, enum mode mode, int startX, int startY, int endX, int endY){
+void select_rect_coord(int wid, enum mode mode, int startX, int startY, int endX, int endY){
+  SDL_Window* window = get_w_by_id(wid);
+  if(window == NULL) return;
+  
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
   printf("selection de tout les pixels entre (%d, %d) et (%d, %d)\n", startX, startY, endX, endY);
   if(mode == OVERWRITE)
-    deselect_all(window);
+    deselect_all(wid);
   for(int i=MIN(startX,endX);i<MAX(startX,endX);i++){
     for(int j=MIN(startY,endY);j<MAX(startY,endY);j++){
       (s->pixels)[PIXEL_COORD(i,j,s->w_width)] = mode==SUB?0:1;
@@ -369,7 +377,10 @@ void select_rect_coord(SDL_Window* window, enum mode mode, int startX, int start
 }
 
 //selectionner un rectangle
-void select_rect(SDL_Window* window, enum mode mode){
+void select_rect(int wid, enum mode mode){
+  SDL_Window* window = get_w_by_id(wid);
+  if(window == NULL) return;
+  
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -401,7 +412,7 @@ void select_rect(SDL_Window* window, enum mode mode){
       switch (e.type) {
       case SDL_MOUSEMOTION:
 	reset_content(window, 0);
-	draw_selected_pixels(window, 0);
+	draw_selected_pixels(wid, 0);
 	SDL_LockSurface(surface);
 	int minX = MIN(startX, e.motion.x);
 	int maxX = MAX(startX, e.motion.x);
@@ -435,12 +446,15 @@ void select_rect(SDL_Window* window, enum mode mode){
     }
   }
  end:
-  select_rect_coord(window, mode, startX, startY, endX, endY);
+  select_rect_coord(wid, mode, startX, startY, endX, endY);
   //printf("end\n");
 }
 
 //selectionner librement avec la souris
-void select_free(SDL_Window* window, enum mode mode){
+void select_free(int wid, enum mode mode){
+  SDL_Window* window = get_w_by_id(wid);
+  if(window == NULL) return;
+  
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -498,7 +512,7 @@ void select_free(SDL_Window* window, enum mode mode){
     q = q->next;
   }
   if(mode == OVERWRITE)
-    deselect_all(window);
+    deselect_all(wid);
   int minX=10000,maxX=0,minY=10000,maxY=0;
   q = p;
   while(q != NULL){
@@ -534,23 +548,61 @@ int color_diff(Uint8 r1, Uint8 g1, Uint8 b1, Uint8 r2, Uint8 g2, Uint8 b2){
   return ABS(r) + ABS(b) + ABS(g);
 }
 
-Uint32 getpixel(SDL_Surface *surface, int x, int y){
+/*Uint32 getpixel(SDL_Surface *surface, int x, int y){
   Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * 4;
   return *(Uint32 *)p;
+}*/
+
+Uint32 getpixel(SDL_Surface *surface, int x, int y)
+{
+  int bpp = surface->format->BytesPerPixel;
+  /* Here p is the address to the pixel we want to retrieve */
+  Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+  switch(bpp) {
+  case 1:
+    return *p;
+    break;
+
+  case 2:
+    return *(Uint16 *)p;
+    break;
+
+  case 3:
+    if(SDL_BYTEORDER == SDL_BIG_ENDIAN)
+      return p[0] << 16 | p[1] << 8 | p[2];
+    else
+      return p[0] | p[1] << 8 | p[2] << 16;
+    break;
+
+  case 4:
+    return *(Uint32 *)p;
+    break;
+
+  default:
+    return 0;       /* shouldn't happen, but avoids warnings */
+  }
 }
 
-void select_color(SDL_Window* window, Uint32 _color, int maxdiff, enum mode mode){
+void select_color(int wid, int red, int green, int blue, int maxdiff, enum mode mode){
+  SDL_Window* window = get_w_by_id(wid);
+  if(window == NULL) return;
+  
+  SDL_Surface* surface = get_sf_by_id(wid);
+  if(surface == NULL) return;
+  
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
   //transformation pourcentage en difference de couleurs
   maxdiff = maxdiff * (3 * 255) / 100;
-  SDL_PixelFormat *format = SDL_GetWindowSurface(s->window)->format;
+  SDL_PixelFormat *format = surface->format;
+
+  Uint32 _color = SDL_MapRGB(format, (Uint8)red, (Uint8)green, (Uint8)blue);
+  
   Uint8 r,g,b;
   SDL_GetRGB(_color, format, &r, &g, &b);
   //printf("selecting color %d %d %d\n", r, g, b);
-  //remplacer par la surface correspondante au fenetre s->window
-  SDL_Surface* surface = SDL_GetWindowSurface(s->window);
   for(int i = 0;i < s->w_width;i++){
     for(int j = 0;j < s->w_height;j++){
       Uint8 r2,g2,b2;
@@ -563,7 +615,10 @@ void select_color(SDL_Window* window, Uint32 _color, int maxdiff, enum mode mode
 
 //visualiser sur une fenetre la région selectionnée
 //la partie non selectionnée apparait sombre
-void draw_selected_pixels(SDL_Window* window, short render){
+void draw_selected_pixels(int wid, short render){
+  SDL_Window* window = get_w_by_id(wid);
+  if(window == NULL) return;
+  
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -605,7 +660,7 @@ short is_selected(int pixel_x, int pixel_y, SDL_Window *window){
   return (s == NULL) || (s->pixels[PIXEL_COORD(pixel_x,pixel_y,s->w_width)] == 1);
 }
 
-int main(){
+/*int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
   
@@ -625,3 +680,4 @@ int main(){
   
   return EXIT_SUCCESS;
 }
+*/
