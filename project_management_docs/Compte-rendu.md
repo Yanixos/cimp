@@ -78,6 +78,9 @@
 2. Codage des parties principales de Windows & Images par Bareche Yassine
 3. Codage des parties principales de Selection par Bouzaouit Oussama
 
+
+
+
 ------------
 
 
@@ -99,12 +102,14 @@
 3. Mise au point sur la technique de selection par tracé libre.
 
 ### Tâches à accomplir lors de la semaine 5:
-
 1. Concatiner les parties codés jusqu'à présent:Tous les membres.
 2. Codage des parties principales du Regex :Alim Yanis
 3. Compléter le module Windows & Images et commecer le codage du module Image Effect:Bareche Yassine
 4. Compléter le module Selection et commecer le codage du module Selection 
 Effect:Bouzaouit Oussama.
+
+
+
 
 ------------
 
@@ -127,8 +132,61 @@ Effect:Bouzaouit Oussama.
 
 ### Tâches à accomplir lors de la semaine 6:
 1. Commencer à faire les fonctionnalités du script editor : Alim Yanis
-2. Commencer à faire les fonctionnalités du module Images_Effects : Bouzaouit Oussama : Bareche Yassine
+2. Commencer à faire les fonctionnalités du module Images_Effects : Bareche Yassine
 3. Commencer à faire les fonctionnalités du module Selection_Effects : Bouzaouit Oussama
+
+
+
 
 ------------
 
+
+##### DATE: 02 AVRIL / 14h30 à 16h30 / SALLE 2001
+##### Rapporteur: Bouzaouit Oussama
+
+------------
+
+
+### Ordre du jour :
+#### Suivi de la semaine 6:
+1. Editeur de scripts : création, modification et sauvegarde de scripts.
+2. Module Image Effects : codage des principaux transformations d'image.
+3. Module Selection Effects : codage des principaux effets de sélections.
+
+#### Points abordés  : 
+1. Liaison des modules finalisés
+2. Installation des bibliothèques libpng et libjpeg pour permettre la lecture/écriture des format PNG et JPEG
+
+### Tâches à accomplir lors de la semaine 7:
+1. Liaison du module Parser avec le Main et le reste des modules : Alim Yanis
+2. Compléter le module Images_Effects : Bareche Yassine
+3. Compléter le module Selection_Effects : Bouzaouit Oussama
+
+
+
+
+------------
+
+
+##### DATE: 09 AVRIL / 14h30 à 16h30 / SALLE 2001
+##### Rapporteur: Bouzaouit Oussama
+
+------------
+
+
+### Ordre du jour :
+#### Suivi de la semaine 7:
+1. Création d'un nouveau module Linker pour faciliter la liaison des modules avec le Main.
+2. Complétion du module Image Effects.
+3. Complétion du module Selection Effects et ajout de Copy/Cut/Paste.
+
+#### Points abordés  : 
+1. Suppression de la dépendance entre SDL et les modules Main, Parser, Linker
+2. Fusion des branches Image Effects et Selection Effects avec le master
+
+### Tâches à accomplir lors de la semaine 8:
+1. Liaison du module Linker avec les fonctions publiques des autres modules : Alim Yanis
+2. Changer l'interface du module Images_Effects, utiliser les ID des fenêtres : Bareche Yassine
+3. Changer l'interface du module Selection_Effects, utiliser les ID des fenêtres : Bouzaouit Oussama
+
+------------
