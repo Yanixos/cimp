@@ -2,225 +2,154 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "parser.h"
 
+void intHandler(int n);
+void intro();
+char *replace_str(char *str,char* orig,char* p);
 char* cimp_prompt();
-char *replace_str(char *,char* ,char* );
-void add_cmd_to_history(char *);
-int cimp_execute(char** );
+char *command_generator (const char *com, int num);
+char ** fileman_completion (const char *com, int start, int end);
 int initialize_readline();
-char ** fileman_completion (const char *, int , int );
-char *command_generator (const char *, int );
 
-/*
-//  liste des noms des commandes
-char *cmd_name[] =
-{
-    "load",
-    "transfer",
-    "read",
-    "save",
-    "export",
-    "select",
-    "show_selected",
-    "delete_selected",
-    "add_selected",
-    "unselect",
-    "copy",
-    "cut",
-    "paste",
-    "symetric",
-    "rotate",
-    "zoom",
-    "size",
-    "fill",
-    "replace",
-    "negative",
-    "gray",
-    "black_white",
-    "brightness",
-    "contrast",
-    "write_script",
-    "load_script",
-    "edit_script",
-    "save_script",
-    "rename_script",
-    "execute_script",
-    "undo",
-    "redo",
-    "transparency",
-    "modify_pbc",
-    "angle_rotate",
-    "art_effect"
-}
-
-// les des fonctions des commandes
-int (*cmd_func[]) (char **) =
-{
-    &cimp_load,
-    &cimp_transfer,
-    &cimp_read,
-    &cimp_save,
-    &cimp_export,
-    &cimp_select,
-    &cimp_show_selected,
-    &cimp_delete_selected,
-    &cimp_add_selected,
-    &cimp_unselect,
-    &cimp_copy,
-    &cimp_cut,
-    &cimp_paste,
-    &cimp_symetric,
-    &cimp_rotate,
-    &cimp_zoom,
-    &cimp_size,
-    &cimp_fill,
-    &cimp_replace,
-    &cimp_negative,
-    &cimp_gray,
-    &cimp_black_white,
-    &cimp_brightness,
-    &cimp_contrast,
-    &cimp_write_script,
-    &cimp_load_script,
-    &cimp_edit_script,
-    &cimp_save_script,
-    &cimp_rename_script,
-    &cimp_execute_script,
-    &cimp_undo,
-    &cimp_redo,
-    &cimp_transparency,
-    &cimp_modify_pbc,
-    &cimp_angle_rotate,
-    &cimp_art_effect,
-};
-*/
 int main(int argc, char **argv)
 {
-    char* prompt;
-    char* line;
-    char** args = (char**) calloc( SIZE , sizeof(char*) );
-    command* cmd = NULL;
+     //intro();
+     BATCH_MODE = 0;
+     int ret;
+     char* prompt;
+     char* line;
+     char** args;
+     command* cmd;
 
-    initialize_readline ();                                                     // initialiser la completion automatique
+     signal(SIGINT, intHandler);
+     initialize_readline ();                                                    // initialiser la completion automatique
 
-	do
-    {
-        prompt = cimp_prompt();
-        line = readline (prompt);                                               // lecture du commande
+     do
+     {
+          args= (char**) calloc(SIZE,sizeof(char *));
+          cmd = (command*) calloc(1,sizeof(command));
+          cmd->files = (char**) calloc(2,sizeof(char*));
+          cmd->pixels = (pixel**) calloc(2,sizeof(pixel*));
+          cmd->colors = (color**) calloc(2,sizeof(color*));
 
-        if ( ! line  )                                                          // si il s'agit d'un CNTRL+D
-            break;                                                              // on sort de la boucle
+          prompt = cimp_prompt();
+          line = readline (prompt);                                             // lecture du commande
+          if ( ! line  )                                                        // signal CNTRL+D
+               break;                                                           // on sort de la boucle
 
-        /*
-        if ( parse (line,cmd) )
-        {
-            if ( cimp_execute (cmd) )
-                add_to_history(line);                                            // ajout de la commande à l'historique
-        }
-        */
-    } while (1);
+          if ( !strcmp(line,"") )
+               continue;
+          ret = parse_by_mode(line,args,cmd);
+          free(cmd);
+          free(args);
 
-    free(cmd);
-    //free(args);
-    fprintf(stdout,"\n");
+     } while (1);
 
-    exit(EXIT_FAILURE);
+     free(line);
+     free(prompt);
+
+     fprintf(stdout,"\n");
+
+     exit(ret);
 }
 
-char* cimp_prompt()
+void intHandler(int n)
 {
-    char *orig = strdup(getenv("HOME"));
-    char prompt[SIZE];
-    char cwd[254];
-    char *p;
+     fprintf(stderr,"\n");
+     exit(EXIT_FAILURE);
+}
 
-    getcwd(cwd, sizeof(cwd));
-    sprintf(prompt,"%s%s%s%s",strdup(getenv("USER")),"@cimp:",cwd,"$ ");
-
-    if ( ( p = strstr(prompt, orig) ) != NULL )
-        return replace_str(prompt,orig,p);
-    else
-        return strdup(prompt);
+void intro()
+{
+     system("clear");
+     fprintf(stdout, "_____________ Welcome to cimp command line interface _____________\n" );
+     sleep(1);
+     fprintf(stdout, "\nUse: help [command]: to get familliar with the commands\n" );
+     sleep(1);
+     fprintf(stdout, "\nBatch mode 0: disable the batch mode\n" );
+     sleep(1);
+     fprintf(stdout, "Batch mode 1: enable the first batch mode: command regex [options1] ... [optionN]\n" );
+     sleep(1);
+     fprintf(stdout, "Batch mode 2: enable the second batch mode: command file1 ... fileN [options1] ... [optionN]\n" );
+     sleep(1);
+     fprintf(stdout, "By default : batch mode is disabled\n");
+     sleep(1);
+     fprintf(stdout, "\nHave fun editing your images ^_^\n\nPress any key to continue...");
+     getchar();
+     system("clear");
 }
 
 char *replace_str(char *str,char* orig,char* p)
 {
-    char buffer[SIZE];
-    char* rep = strdup("~");
+     char buffer[SIZE];
+     char* rep = strdup("~");
 
-    strncpy(buffer, str, p-str);
-    buffer[p-str] = '\0';
+     strncpy(buffer, str, p-str);
+     buffer[p-str] = '\0';
 
-    sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
-    return strdup(buffer);
+     sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
+     return strdup(buffer);
 }
 
 
-void add_cmd_to_history(char *cmd)
+char* cimp_prompt()
 {
-    char* cimp_history = strdup(getenv("HOME"));
-    strcat(cimp_history,"/.cimp_history");
-    FILE * fp;
+     char *orig = strdup(getenv("HOME"));
+     char prompt[SIZE];
+     char cwd[254];
+     char *p;
 
-    if ( ( fp = fopen(cimp_history,"a+") ) == NULL)
-        fprintf(stderr,"cimp: add_cmd_to_history(): fopen failed.\n");
+     getcwd(cwd, sizeof(cwd));
+     sprintf(prompt,"\033[1;31m%s%s\033[0m%s%s",strdup(getenv("USER")),"@cimp:",cwd,"$ ");
 
-    if ( ( fprintf(fp,"%s",cmd) ) == -1 )
-        fprintf(stderr,"cimp: add_cmd_to_history(): fprintf failed.\n");
-
-    if (fp)
-        fclose(fp);
-}
-/*
-int cimp_execute(char **args)
-{
-    // chercher la commande dans les commandes internes
-    for (int i = 0; i < CMD_NUM; i++)
-            if (strcmp(args[0], cmd_name[i]) == 0)
-                return (*cmd_func[i])(args);
-    fprintf(stderr,"cimp: cimp_execute(): failed\n");
-    return -1;
-}
-*/
-int initialize_readline()
-{
-    rl_attempted_completion_function = fileman_completion;
-    return 0;
-}
-
-char ** fileman_completion (const char *com, int start, int end)
-{
-    char **matches;
-    matches = (char **)NULL;
-
-    if (start == 0)
-        matches = rl_completion_matches (com, command_generator);
-
-    return (matches);
+     if ( ( p = strstr(prompt, orig) ) != NULL )
+          return replace_str(prompt,orig,p);
+     else
+          return strdup(prompt);
 }
 
 char *command_generator (const char *com, int num)
 {
-/*
-    static int indice, len;
-    char *completion;
+     static int indice, len;
+     char *completion;
 
-    if (num == 0)
-    {
-        indice = 0;
-        len = strlen(com);
-    }
+     if (num == 0)
+     {
+          indice = 0;
+          len = strlen(com);
+     }
 
-    while (indice < NUM_CMD)
-    {
-        completion = cmd_funct[indice++];
+     while (indice < NUM_PARSE)
+     {
+          completion = cmd_name[indice++];
 
         if (strncmp (completion, com, len) == 0)
-            return strdup(completion);
+          return strdup(completion);
     }
-*/
+
     return NULL;
+}
+
+char ** fileman_completion (const char *com, int start, int end)
+{
+     char **matches;
+     matches = (char **)NULL;
+
+     if (start == 0)
+          matches = rl_completion_matches (com, command_generator);
+
+     return (matches);
+}
+
+int initialize_readline()
+{
+     rl_attempted_completion_function = fileman_completion;
+     return 0;
 }
