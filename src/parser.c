@@ -7,7 +7,7 @@
 #include "parser.h"
 #include "linker.h"
 
-char *cmd_name[] =
+char *cmd_name[] =                                                        // la liste des noms des commandes
 {
     "open",
     "save",
@@ -47,7 +47,7 @@ char *cmd_name[] =
     "exit"
 };
 
-int (*parse_func[]) (char **, command*) =
+int (*parse_func[]) (char **, command*) =                                 // la liste des fonctions des commandes
 {
     &parse_open,
     &parse_save,
@@ -87,7 +87,7 @@ int (*parse_func[]) (char **, command*) =
     &parse_exit
 };
 
-char* syntax[] =
+char* syntax[] =                                                          // la liste de la syntax des commandes
 {
     "open filename.EXT [-o filename_.EXT]\n",
     "save filename.EXT -o filename.EXT\n",
@@ -127,7 +127,7 @@ char* syntax[] =
     "exit [value]\n"
 };
 
-char* help[] =
+char* help[] =                                                                  // la liste de l'aide des commandes
 {
      "open an image for editing in a new window or in an existing one\n",
      "save an image in a giving format\n",
@@ -167,26 +167,26 @@ char* help[] =
      "exit cimp\n"
 };
 
-int check_extension(char* filename)
+int check_extension(char* filename)                                             // vérifier l'extension d'une image
 {
 
-   if ( strlen(filename) < 5 )
+   if ( strlen(filename) < 5 )                                                  // longueur minimale est de 5 : 1.png
      return -1;
 
-   const char *str_regex = "\\.(jpeg|jpg|exif|tiff|gif|bmp|png|ppm|pgm|pbm|pnm|webp|hdr)$";
+   const char *str_regex = "\\.(jpeg|jpg|exif|tiff|gif|bmp|png|ppm|pgm|pbm|pnm|webp|hdr)$"; // le nom doit se terminer avec .EXT
    regex_t preg;
-   if ( !(regcomp (&preg, str_regex, REG_NOSUB | REG_EXTENDED)) )
+   if ( !(regcomp (&preg, str_regex, REG_NOSUB | REG_EXTENDED)) )               // matcher l'expression régulière
    {
       int match;
       match = regexec (&preg, filename, 0, NULL, 0);
       regfree (&preg);
-      return match;
+      return match;                                                             // cas de match positif
    }
    else
-     return -1;
+     return -1;                                                                 // cas de match négative
 }
 
-int check_pixel(char* arg, pixel* p)
+int check_pixel(char* arg, pixel* p)                                            // vérifier la syntax d'un pixel de ce format (X,Y)
 {
      int end = strlen(arg)-1;
      char* e = strchr(arg, ',');
@@ -206,7 +206,7 @@ int check_pixel(char* arg, pixel* p)
      }
 }
 
-char* name_to_rgb(char* arg)
+char* name_to_rgb(char* arg)                                                    // conversion (R,G,B) vers nom de couleur
 {
      char* colors[] = {"white","silver","gray","black","red","maron","yellow","olive","lime","green","aqua","teal","blue","navy","fuchisa","purple","pink"};
      char* rgbs[] ={"(255,255,255)","(192,192,192)","(128,128,128)","(0,0,0)","(255,0,0)","(128,0,0)","(255,255,0)","(128,128,0)","(0,255,0)","(0,128,0)","(0,255,255)","(0,128,128)","(0,0,255)","(0,0,128)","(255,0,255)","(128,0,128)","(255,192,203)" };
@@ -219,7 +219,7 @@ char* name_to_rgb(char* arg)
      return NULL;
 }
 
-int check_color(char* arg, color* c)
+int check_color(char* arg, color* c)                                            // vérifier la syntax d'une couleur : (R,G,B)
 {
      if ( arg[0] != '(' )
           if ( ! (arg = name_to_rgb(arg)) )
@@ -254,7 +254,7 @@ int check_color(char* arg, color* c)
      return 0;
 }
 
-int batch_files(int argc, char** args, char** list)
+int batch_files(int argc, char** args, char** list)                             // retourne la listes des fichier auquels appliqué la commande
 {
      int j = 0;
      for (int i=1; i<argc; i++)
@@ -265,7 +265,7 @@ int batch_files(int argc, char** args, char** list)
      return j;
 }
 
-int batch_regex(char* reg_file, char** list)
+int batch_regex(char* reg_file, char** list)                                    // parser les commandes qui ont des wildcard
 {
      int i = 0;
      char ls_regex[SIZE];
@@ -274,7 +274,7 @@ int batch_regex(char* reg_file, char** list)
      pid_t pid = fork();
 
      if ( pid == 0 )
-          execl("/bin/sh", "bin/sh", "-c", ls_regex, (char*) NULL);
+          execl("/bin/sh", "bin/sh", "-c", ls_regex, (char*) NULL);             // lister les fichiers resultant du wildcard
 
      int status;
      waitpid(pid, &status, 0);
@@ -301,7 +301,7 @@ int batch_regex(char* reg_file, char** list)
      return -1;
 }
 
-int tokenize(char* line,char** args)
+int tokenize(char* line,char** args)                                            // conversion d'une ligne de commande vers des tokens
 {
     int i = 0;
     for (char *token = strtok(line,SEP); token != NULL; token = strtok(NULL, SEP) )
@@ -309,7 +309,7 @@ int tokenize(char* line,char** args)
     return i;
 }
 
-char** make_args(int argc, int n, char* cmd_name, char*filename,char **args)
+char** make_args(int argc, int n, char* cmd_name, char*filename,char **args)    // conversion des fichiers trouvés vers une liste de sring
 {
      char** new_args = (char**) calloc(argc-n+1,sizeof(char*));
      new_args[0] = strdup(cmd_name);
@@ -320,7 +320,7 @@ char** make_args(int argc, int n, char* cmd_name, char*filename,char **args)
      return new_args;
 }
 
-void add_cmd_to_history(char *cmd,char* file)
+void add_cmd_to_history(char *cmd,char* file)                                   // ajouter une commande au fichier d'historique
 {
      char dest[254];
      sprintf(dest,"%s/.%s_history",getenv("HOME"),file);
@@ -336,7 +336,7 @@ void add_cmd_to_history(char *cmd,char* file)
           fclose(fp);
 }
 
-void debug(char* line, command* cmd, char** args)
+void debug(char* line, command* cmd, char** args)                               // fonction de deboggage
 {
      printf("line: %s\n",line );
      fprintf(stdout,"args:\n" );
@@ -362,61 +362,62 @@ void debug(char* line, command* cmd, char** args)
           fprintf(stdout,"\t|colors[1]: %d %d %d\n",cmd->colors[1]->r,cmd->colors[0]->g,cmd->colors[0]->b);
 }
 
-int parse_by_mode (char* line, char** args, command* cmd)
+int parse_by_mode (char* line, char** args, command* cmd,int flag)              // parser les commandes selon les leur batch mode
 {
      cmd->argc = tokenize(line,args);
      cmd->index = get_index(args[0]);
-     if ( cmd->index == -1 )
+     if ( cmd->index == -1 )                                                    // commande non existante
      {
           fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
           fprintf(stderr,"cimp_parser(): command unknwon\n");
           return -1;
      }
-     if ( cmd->index > 22 )
-          return parse_func[cmd->index](args,cmd);
 
-     if ( BATCH_MODE == 0 )
+     if ( BATCH_MODE == 0 )                                                     // pas de batch mode
      {
-          if ( ! parse_func[cmd->index](args,cmd) )
+          if ( ! parse_func[cmd->index](args,cmd) )                             // parser la commande
           {
-               if ( !call_command(cmd) )
-                    add_cmd_to_history(line,cmd->files[0]);                                       // ajout de la commande à l'historique
+               if ( !call_command(cmd) )                                        // si elle s'execute bien
+                    if ( flag && cmd->index < 23 )                              // on vérifier qu'elle doit etre ajouter à  l'historique
+                         add_cmd_to_history(line,cmd->files[0]);                // ajouter à l'historique
           }
      }
-     else if ( BATCH_MODE == 1 )
+     else if ( BATCH_MODE == 1 )                                                // batch mode 1 : command REGEX .....
      {
           char** list = calloc(SIZE,sizeof(char*));
           int n = batch_regex(args[1],list);
-          for (int i=0; i<n; i++)
+          for (int i=0; i<n; i++)                                               // pour chaque fichier trouvé
           {
-               args[1] = strdup(list[i]);
-               if ( ! parse_func[cmd->index](args,cmd) )
+               args[1] = strdup(list[i]);                                       // rendre ce fichier comme argument d'une commande simple
+               if ( ! parse_func[cmd->index](args,cmd) )                        // parser la commande
                {
-                    if ( !call_command(cmd) )
-                         add_cmd_to_history(line,cmd->files[0]);                                       // ajout de la commande à l'historique
+                    if ( !call_command(cmd) )                                   // si elle s'execute bien
+                         if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
+                              add_cmd_to_history(line,cmd->files[0]);           // ajouter à l'historique
                }
           }
      }
      else
-     {
+     {                                                                          // batch mode 2 : command file1 ... fileN ...
           char** list = calloc(SIZE,sizeof(char*));
           int n = batch_files(cmd->argc,args,list);
           cmd->argc = cmd->argc - n + 1;
 
-          for (int i=0; i<n; i++)
+          for (int i=0; i<n; i++)                                               // pour chaque fichier
           {
-               char** new_args = make_args(cmd->argc, n, args[0],list[i],args);
-               if ( ! parse_func[cmd->index](new_args,cmd) )
+               char** new_args = make_args(cmd->argc, n, args[0],list[i],args); // rendre ce fichier comme argument d'une commande simple
+               if ( ! parse_func[cmd->index](new_args,cmd) )                    // parser
                {
-                    if ( !call_command(cmd) )
-                         add_cmd_to_history(line,cmd->files[0]);       // ajout de la commande à l'historique
+                    if ( !call_command(cmd) )                                   // si la commande s'execute bien
+                         if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
+                              add_cmd_to_history(line,cmd->files[0]);           // ajouter la commande à l'historique
                }
           }
      }
      return 0;
 }
 
-int get_index(char* name)
+int get_index(char* name)                                                       // retourne l'index si trouvé sinon -1
 {
      int i;
      for ( i=0; i < NUM_PARSE; i++ )
@@ -427,7 +428,7 @@ int get_index(char* name)
      return -1;
 }
 
-int parse_open(char** args, command* cmd)
+int parse_open(char** args, command* cmd)                                       // parser la commmande open
 {
      // open filename.EXT [-o filename_.EXT]
 
