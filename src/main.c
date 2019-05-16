@@ -10,25 +10,25 @@
 #include <readline/history.h>
 #include "parser.h"
 
-void intHandler(int n);
-void intro();
-char *replace_str(char *str,char* orig,char* p);
-char* cimp_prompt();
-char *command_generator (const char *com, int num);
-char ** fileman_completion (const char *com, int start, int end);
-int initialize_readline();
+void intHandler(int n);                                                         // fonction qui prend en charge le clique du cntrl+c
+void intro();                                                                   // introduction à cimp
+char *replace_str(char *str,char* orig,char* p);                                // utiliser pour remplace $HOME par ~
+char* cimp_prompt();                                                            // retourne le prompt de cimp
+char *command_generator (const char *com, int num);                             // genère la completion automatique
+char ** fileman_completion (const char *com, int start, int end);               // retourne les fichiers à suggerer
+int initialize_readline();                                                      // intialise la lecture de la ligne de commande
 
 int main(int argc, char **argv)
 {
-     //intro();
-     BATCH_MODE = 0;
+     intro();                                                                   // lancer l'introduction
+     BATCH_MODE = 0;                                                            // batch mode est desactivé par défaut
      int ret;
      char* prompt;
      char* line;
      char** args;
      command* cmd;
 
-     signal(SIGINT, intHandler);
+     signal(SIGINT, intHandler);                                                // associer le signal SIGINT à la fonction intHandler
      initialize_readline ();                                                    // initialiser la completion automatique
 
      do
@@ -44,9 +44,9 @@ int main(int argc, char **argv)
           if ( ! line  )                                                        // signal CNTRL+D
                break;                                                           // on sort de la boucle
 
-          if ( !strcmp(line,"") )
+          if ( !strcmp(line,"") )                                               // ligne vide
                continue;
-          ret = parse_by_mode(line,args,cmd);
+          ret = parse_by_mode(line,args,cmd,1);                                 // parser la command
           free(cmd);
           free(args);
 
@@ -69,6 +69,17 @@ void intHandler(int n)
 void intro()
 {
      system("clear");
+     fprintf(stdout, "Do you like to get a quick intro ? yes/no: " );
+     char c[4] = "" ;
+     scanf("%3s",&c);
+     while ( strcasecmp(c,"yes") && strcasecmp(c,"no") )
+     {
+          fprintf(stderr, "\nWrong choice !\nyes/no: ");
+          scanf("%3s",&c);
+     }
+     if ( ! strcasecmp(c,"no") )
+          return;
+
      fprintf(stdout, "_____________ Welcome to cimp command line interface _____________\n" );
      sleep(1);
      fprintf(stdout, "\nUse: help [command]: to get familliar with the commands\n" );
@@ -81,7 +92,7 @@ void intro()
      sleep(1);
      fprintf(stdout, "By default : batch mode is disabled\n");
      sleep(1);
-     fprintf(stdout, "\nHave fun editing your images ^_^\n\nPress any key to continue...");
+     fprintf(stdout, "\nHave fun editing your images ^_^\n\nPress any key to continue...\n");
      getchar();
      system("clear");
 }
@@ -95,22 +106,24 @@ char *replace_str(char *str,char* orig,char* p)
      buffer[p-str] = '\0';
 
      sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
+     free(orig);
+     free(rep);
      return strdup(buffer);
 }
 
 
 char* cimp_prompt()
 {
-     char *orig = strdup(getenv("HOME"));
+     char *orig = strdup(getenv("HOME"));                                       // recuperer le chemin de repertoire home
      char prompt[SIZE];
      char cwd[254];
      char *p;
 
-     getcwd(cwd, sizeof(cwd));
-     sprintf(prompt,"\033[1;31m%s%s\033[0m%s%s",strdup(getenv("USER")),"@cimp:",cwd,"$ ");
+     getcwd(cwd, sizeof(cwd));                                                  // recuperer le chemin du repertoire actuel
+     sprintf(prompt,"\033[1;31m%s%s\033[0m%s%s",strdup(getenv("USER")),"@cimp:",cwd,"$ ");     //créer le prompot
 
-     if ( ( p = strstr(prompt, orig) ) != NULL )
-          return replace_str(prompt,orig,p);
+     if ( ( p = strstr(prompt, orig) ) != NULL )                                // si le prompt contient le chemin du home
+          return replace_str(prompt,orig,p);                                    // on le remplace par ~
      else
           return strdup(prompt);
 }
