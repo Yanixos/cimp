@@ -7,7 +7,9 @@ selection_tests.o: selection_tests.c selection_tests.h
 	gcc -o selection_tests.o -c selection_tests.c `sdl2-config --cflags --libs` -lSDL2_image -lpng -lcheck_pic -pthread -lrt -lm -lsubunit
 
 selection_effects_tests.o: selection_effects_tests.c selection_effects_tests.h
-	gcc -o selection_effects_tests.o -c selection_effects_tests.c `sdl2-config --cflags --libs` -lSDL2_image -lpng -lcheck_pic -pthread -lrt -lm -lsubunit
+	gcc -o selection_effects_tests.o -c selection_effects_tests.c `sdl2-config --cflags --libs` -lSDL2_image -lpng -lcheck_pic -pthread -lrt -lm -lsubunitSuite*
+win_img_tests.o:win_img_tests.c win_img_tests.h
+	gcc -o win_img_test.o -c win_img_tests.c  `sdl2-config --cflags --libs` -lSDL2_image -lpng -lcheck_pic -pthread -lrt -lm -lsubunitSuite*
 
 clean:
 	rm -f tests_runner selection_tests.o selection_effects_tests.o
