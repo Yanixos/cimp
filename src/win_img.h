@@ -43,4 +43,5 @@ extern void set_bg_color(int r,int g, int b);
 extern void freelist();
 extern SDL_Window * test_window();
 
+
 #endif

@@ -225,6 +225,7 @@ int save_bmp_img(SDL_Surface *img, const char *path){
 int save_bmp(int id,const char *path){
 
   SDL_Surface *s=get_sf_by_id(id);
+  printf("%d  %s\n",id,path);
   if(s!=NULL)
     return save_bmp_img(s,path);
   else
