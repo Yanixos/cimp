@@ -627,6 +627,7 @@ int parse_unselect(char** args, command* cmd)
           return -1;
      }
      cmd->files[0] = strdup(args[1]);
+     return 0;
 }
 
 int parse_copy(char** args, command* cmd)
