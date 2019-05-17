@@ -28,7 +28,7 @@ extern void apply_pixel(int wid, int size);
 extern void copy(int wid);
 //couper la zone selectionnée d'une image
 //background_color: la couleur qui remplacera les pixels coupés
-extern void cut(int wid, Uint32 background_color);
+extern void cut(int wid, int r, int g, int b);
 //coller le presse-papier dans une image
 //à partir des coordonnées (x, y)
 extern void paste(int wid, int x, int y);

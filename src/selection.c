@@ -74,7 +74,7 @@ short point_in_tri(point p, triangle tr) {
   int crossproduct = (tr.p0.y - tr.p1.y) * (tr.p2.x - tr.p1.x) -
     (tr.p0.x - tr.p1.x) * (tr.p2.y - tr.p1.y);
   if(crossproduct == 0)return 0;
-  
+
   int dX = p.x-tr.p2.x;
   int dY = p.y-tr.p2.y;
   int dX21 = tr.p2.x-tr.p1.x;
@@ -117,7 +117,7 @@ void add_point_node(point_node** l, int x, int y){
     *l = p;
     return;
   }
-  
+
   point_node* q = *l;
   while(q->next != NULL)
     q = q->next;
@@ -148,7 +148,7 @@ void free_point_list(point_node* l){
 //source://
 //modifiée pour permettre de tracer toutes les lignes
 void draw_line(int x1, int y1, int x2, int y2, SDL_Surface* surface){
-  short invX = 0, invY = 0;
+  short invX = 0;
   if(x1 > x2){
     if(y1 > y2){
       draw_line(x2,y2,x1,y1,surface);
@@ -164,10 +164,10 @@ void draw_line(int x1, int y1, int x2, int y2, SDL_Surface* surface){
     return;
   }
   SDL_LockSurface(surface);
-  int dx=x2-x1; 
+  int dx=x2-x1;
   int dy=y2-y1;
   int StepVal=0;
-  int x,y; 
+  int x,y;
   if(dx>dy){
     y=y1;
     for(x=x1; x<=x2; x++){
@@ -232,7 +232,7 @@ void new_selection_node(SDL_Window* w){
     selection_list = s;
     return;
   }
-  
+
   selection_node* p = selection_list;
   while(p->next != NULL){
     p = p->next;
@@ -281,7 +281,7 @@ void refresh_selection_list(){
   int wl_size;
   //recuperer le tableau des fenetres existantes ici
   get_all_windows(&wl, &wl_size);
-  
+
   //création des selection_node pour les nouvelle fenetres
   for(int i = 0;i < wl_size;i++){
     if(get_sel_node((&wl)[i]) == NULL){
@@ -348,7 +348,7 @@ void select_all(int wid){
 void deselect_all(int wid){
   SDL_Window* window = get_w_by_id(wid);
   if(window == NULL) return;
-  
+
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -362,11 +362,11 @@ void deselect_all(int wid){
 void select_rect_coord(int wid, enum mode mode, int startX, int startY, int endX, int endY){
   SDL_Window* window = get_w_by_id(wid);
   if(window == NULL) return;
-  
+
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
-  printf("selection de tout les pixels entre (%d, %d) et (%d, %d)\n", startX, startY, endX, endY);
+  //printf("selection de tout les pixels entre (%d, %d) et (%d, %d)\n", startX, startY, endX, endY);
   if(mode == OVERWRITE)
     deselect_all(wid);
   for(int i=MIN(startX,endX);i<MAX(startX,endX);i++){
@@ -378,9 +378,11 @@ void select_rect_coord(int wid, enum mode mode, int startX, int startY, int endX
 
 //selectionner un rectangle
 void select_rect(int wid, enum mode mode){
+  //printf("%d %d\n",wid,mode);
   SDL_Window* window = get_w_by_id(wid);
   if(window == NULL) return;
-  
+  //printf("telgash\n");
+
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -454,7 +456,7 @@ void select_rect(int wid, enum mode mode){
 void select_free(int wid, enum mode mode){
   SDL_Window* window = get_w_by_id(wid);
   if(window == NULL) return;
-  
+
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -522,7 +524,7 @@ void select_free(int wid, enum mode mode){
     maxY = MAX(maxY, (q->p.y));
     q=q->next;
   }
-  
+
   for(int i = minX;i < maxX;i++){
     for(int j = minY;j < maxY;j++){
       if((mode == ADD && (s->pixels)[PIXEL_COORD(i,j,s->w_width)])
@@ -532,7 +534,7 @@ void select_free(int wid, enum mode mode){
 	point pp = {i, j};
 	if(point_in_tri(pp, tri[k]) &&
 	   !point_in_seg(pp, tri[k].p0, tri[k].p2)){
-	  (s->pixels)[PIXEL_COORD(i,j,s->w_width)] = 
+	  (s->pixels)[PIXEL_COORD(i,j,s->w_width)] =
 	    ((s->pixels)[PIXEL_COORD(i,j,s->w_width)]?0:1);
 	}
       }
@@ -587,10 +589,10 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y)
 void select_color(int wid, int red, int green, int blue, int maxdiff, enum mode mode){
   SDL_Window* window = get_w_by_id(wid);
   if(window == NULL) return;
-  
+
   SDL_Surface* surface = get_sf_by_id(wid);
   if(surface == NULL) return;
-  
+
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -599,7 +601,7 @@ void select_color(int wid, int red, int green, int blue, int maxdiff, enum mode 
   SDL_PixelFormat *format = surface->format;
 
   Uint32 _color = SDL_MapRGB(format, (Uint8)red, (Uint8)green, (Uint8)blue);
-  
+
   Uint8 r,g,b;
   SDL_GetRGB(_color, format, &r, &g, &b);
   //printf("selecting color %d %d %d\n", r, g, b);
@@ -618,7 +620,7 @@ void select_color(int wid, int red, int green, int blue, int maxdiff, enum mode 
 void draw_selected_pixels(int wid, short render){
   SDL_Window* window = get_w_by_id(wid);
   if(window == NULL) return;
-  
+
   selection_node* s = get_sel_node(window);
   if(s == NULL)
     return;
@@ -663,7 +665,7 @@ short is_selected(int pixel_x, int pixel_y, SDL_Window *window){
 /*int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
-  
+
   open_new("../img/test1.bmp");
 
   SDL_Window *window = get_w_by_id(1);
@@ -677,7 +679,7 @@ short is_selected(int pixel_x, int pixel_y, SDL_Window *window){
   int a;
   scanf("%d",&a);
   SDL_Quit();
-  
+
   return EXIT_SUCCESS;
 }
 */

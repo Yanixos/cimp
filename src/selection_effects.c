@@ -91,7 +91,7 @@ void apply_fill(int wid, int r, int g, int b){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -110,7 +110,7 @@ void apply_replace_color(int wid, int sr, int sg, int sb, int dr, int dg, int db
   if(window == NULL || surface == NULL) return;
 
   maxdiff = maxdiff * (3 * 255) / 100;
-  
+
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -137,7 +137,7 @@ void apply_negative(int wid){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -166,7 +166,7 @@ void apply_grayscale(int wid){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -210,7 +210,7 @@ void apply_blackwhite(int wid, int sep){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -245,7 +245,7 @@ void apply_brightness(int wid, int brightness){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   SDL_LockSurface(surface);
   for(int i = 0;i < surface->w;i++){
     for(int j = 0;j < surface->h;j++){
@@ -254,7 +254,7 @@ void apply_brightness(int wid, int brightness){
       SDL_GetRGB(get_pixel(surface, i, j), surface->format, &r, &g, &b);
 
       change_brightness(&r, &g, &b, brightness);
-      
+
       set_pixel(surface, i, j, SDL_MapRGB(surface->format, r, g, b));
     }
   }
@@ -284,6 +284,7 @@ void change_contrast(Uint8* r, Uint8* g, Uint8* b, int contrast){
 
 //changer le contrast d'une image
 void apply_contrast(int wid, int contrast){
+
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
@@ -331,11 +332,11 @@ void apply_blur(int wid, int radius){
       for(int xx = x - radius;xx <= x + radius;xx++){
 	if((xx < 0) || (xx >= surface->w))
 	  continue;
-	
+
 	for(int yy = y - radius;yy <= y + radius;yy++){
 	  if((yy < 0) || (yy >= surface->h))
 	    continue;
-	  
+
 	  count++;
 	  Uint8 r1,g1,b1;
 	  SDL_GetRGB(get_pixel(tmp, xx, yy), tmp->format, &r1, &g1, &b1);
@@ -366,7 +367,7 @@ void apply_pixel(int wid, int size){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   //création d'une copie temporaire de surface
   SDL_Surface *tmp = SDL_CreateRGBSurface(0, surface->w, surface->h, 32, 0, 0, 0, 0);
   SDL_BlitSurface(surface, NULL, tmp, NULL);
@@ -392,11 +393,11 @@ void apply_pixel(int wid, int size){
       for(int xx = startX;xx <= startX + size;xx++){
 	if((xx < 0) || (xx >= surface->w))
 	  continue;
-	
+
 	for(int yy = startY;yy <= startY + size;yy++){
 	  if((yy < 0) || (yy >= surface->h))
 	    continue;
-	  
+
 	  count++;
 	  Uint8 r1,g1,b1;
 	  SDL_GetRGB(get_pixel(tmp, xx, yy), tmp->format, &r1, &g1, &b1);
@@ -426,7 +427,7 @@ void copy(int wid){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   //position de presse-papier
   int cb_x = surface->w;
   int cb_y = surface->h;
@@ -487,7 +488,7 @@ void cut(int wid, int r, int g, int b){
   if(window == NULL || surface == NULL) return;
 
   Uint32 background = SDL_MapRGB(surface->format, (Uint32)r, (Uint32)g, (Uint32)b);
-  
+
   //meme principe que celui de la fonction de copiage
   int cb_x = surface->w;
   int cb_y = surface->h;
@@ -547,7 +548,7 @@ void paste(int wid, int x, int y){
   SDL_Window* window = get_w_by_id(wid);
   SDL_Surface* surface = get_sf_by_id(wid);
   if(window == NULL || surface == NULL) return;
-  
+
   if(clipboard == NULL || x > surface->w || y > surface->h) return;
   //extremités de la zone qui sera remplie par le presse-papier
   int startX = MAX(0, x);
@@ -570,11 +571,11 @@ void paste(int wid, int x, int y){
 /*int main(){
   if(0 != SDL_Init(SDL_INIT_VIDEO))
     return EXIT_FAILURE;
-  
+
   open_new("../img/test1.bmp");
 
   SDL_Window *window = get_w_by_id(1);
-  
+
   new_selection_node(window);
   select_free(1, OVERWRITE);
   apply_replace_color(1, 255, 255, 255, 0, 255, 255, 30);
@@ -587,7 +588,7 @@ void paste(int wid, int x, int y){
   int a;
   scanf("%d",&a);
   SDL_Quit();
-  
+
   return EXIT_SUCCESS;
 }
 */
