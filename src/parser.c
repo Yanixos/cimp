@@ -618,31 +618,8 @@ int parse_select_color(char** args, command* cmd)
 
 int parse_unselect(char** args, command* cmd)
 {
-     //unselect filename.EXT [-p (X1,Y1) (X2,Y2)]
-     cmd->pixels[0] = (pixel*) calloc(1,sizeof(pixel));
-     cmd->pixels[1] = (pixel*) calloc(1,sizeof(pixel));
-     pixel *t1 = cmd->pixels[0];
-     pixel *t2 = cmd->pixels[1];
+     //unselect filename.EXT
 
-     if ( (cmd->argc != 2 && cmd->argc != 5) || \
-        ( (check_extension(args[1]))) || \
-        ( (cmd->argc == 5) && ( strcmp(args[cmd->argc-2],"-p") || check_pixel(args[3],t1) || check_pixel(args[4],t2) ) )
-        )
-     {
-          fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
-          cmd = NULL ;
-          return -1;
-     }
-     cmd->files[0] = strdup(args[1]);
-     if (cmd->argc == 5 )
-          cmd->option = 10;
-
-     return 0;
-}
-
-int parse_copy(char** args, command* cmd)
-{
-     //copy filename.EXT
      if ( cmd-> argc != 2 || check_extension(args[1]) )
      {
           fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
@@ -650,7 +627,12 @@ int parse_copy(char** args, command* cmd)
           return -1;
      }
      cmd->files[0] = strdup(args[1]);
-     return 0;
+}
+
+int parse_copy(char** args, command* cmd)
+{
+     //copy filename.EXT
+     return parse_unselect(args,cmd);
 }
 
 int parse_cut(char** args, command* cmd)
@@ -831,21 +813,13 @@ int parse_replace(char** args, command* cmd)
 int parse_negative(char** args, command* cmd)
 {
      //negative filename.EXT
-     if ( cmd->argc != 2 || check_extension(args[1]) )
-     {
-          fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
-          cmd = NULL ;
-          return -1;
-     }
-
-     cmd->files[0] = strdup(args[1]);
-     return 0;
+     return parse_unselect(args,cmd);
 }
 
 int parse_gray(char** args, command* cmd)
 {
      // gray filename.EXT
-     return parse_negative(args,cmd);
+     return parse_unselect(args,cmd);
 }
 
 int parse_black_white(char** args, command* cmd)
@@ -969,19 +943,19 @@ int parse_execute_script(char** args, command* cmd)
 int parse_undo(char** args, command* cmd)
 {
      // undo filename.EXT
-     return parse_negative(args,cmd);
+     return parse_unselect(args,cmd);
 }
 
 int parse_redo(char** args, command* cmd)
 {
      // redo filename.EXT
-     return parse_negative(args,cmd);
+     return parse_unselect(args,cmd);
 }
 
 int parse_close(char** args, command* cmd)
 {
      // close filename.EXT
-     return parse_negative(args,cmd);
+     return parse_unselect(args,cmd);
 }
 
 int parse_cd(char** args, command* cmd)
