@@ -132,14 +132,18 @@ int execute_script(char* filename)
 
 int count_lines (char* filename)
 {
-    FILE* fp = fopen(filename,"r");
-    int count = 0;
+     FILE* fp;
+     if ( ( fp = fopen(filename,"r") ) == NULL)
+          return -1;
 
-    for (char c = getc(fp); c != EOF; c = getc(fp))
-        if (c == '\n')
-            count = count + 1;
+     int count = 0;
 
-    return count;
+     for (char c = getc(fp); c != EOF; c = getc(fp))
+          if (c == '\n')
+               count = count + 1;
+
+     fclose(fp);
+     return count;
 }
 
 
@@ -147,7 +151,7 @@ int undo_redo(char* filename, int ur_flag)
 {
 
      char dest[254];
-     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),filename);
+     sprintf(dest,"%s_cimphistory",filename);
 
      int nb = count_lines(dest);
 
@@ -173,8 +177,6 @@ int undo_redo(char* filename, int ur_flag)
                     set_index_by_id(id,pos);
                }
           }
-
-
           char cmd[1024];
           if ( pos <= 0 )
           {
@@ -183,12 +185,12 @@ int undo_redo(char* filename, int ur_flag)
 
                sprintf(cmd,"rm %s && \
                             cp %s_cimpbackup %s && \
-                            head -n %d ~/.%s_cimphistory > ~/.temp.cimp && \
-                            sed -i 's/open %s/open %s -o %s/' ~/.temp.cimp", filename,filename,filename,pos,filename,filename,filename,filename);
+                            head -n %d %s_cimphistory > .temp.cimp && \
+                            sed -i 's/open %s/open %s -o %s/' .temp.cimp", filename,filename,filename,pos,filename,filename,filename,filename);
 
                system(cmd);
                char t[254];
-               sprintf(t,"%s/.temp.cimp",getenv("HOME"));
+               sprintf(t,".temp.cimp");
                execute_script(t);
                remove(t);
           }

@@ -23,30 +23,30 @@ SDL_Surface * enlarge_img(SDL_Surface *src,int gate,int r,int g,int b);// agrand
 
 
 SDL_Surface* vertical_sym(SDL_Surface* src){
-    
+
   SDL_Surface *dst=NULL;
   SDL_Rect l1,l2;
   int i;
- 
+
   l1.y=0;
   l1.w=1;
- 
+
   l2.y=0;
   l2.w=1;
- 
+
   dst = SDL_CreateRGBSurface(0, src->w,src->h, 32,  0, 0, 0, 0);
- 
+
   for (i=0;i<dst->w;i++){
 
       l1.x=i;
       l1.h=dst->h;
- 
+
       l2.x=dst->w-i-1;
       l2.h=dst->h;
- 
+
       SDL_BlitSurface(src,&l1,dst,&l2);
   }
- 
+
   return dst;
 }
 
@@ -69,30 +69,30 @@ void apply_vertical(int id){
 
 
 SDL_Surface* horizontal_sym(SDL_Surface* src){
-    
+
   SDL_Surface *dst=NULL;
   SDL_Rect l1,l2;
   int i;
- 
+
   l1.x=0;
   l1.h=1;
- 
+
   l2.x=0;
   l2.h=1;
- 
+
   dst = SDL_CreateRGBSurface(0, src->w,src->h, 32,  0, 0, 0, 0);
- 
+
   for (i=0;i<dst->h;i++){
 
       l1.y=i;
       l1.w=dst->w;
- 
+
       l2.y=dst->h-i-1;
       l2.w=dst->w;
- 
+
       SDL_BlitSurface(src,&l1,dst,&l2);
   }
- 
+
   return dst;
 }
 
@@ -155,14 +155,14 @@ SDL_Surface *color_effect(SDL_Surface *src, short effect){// effect 0:negatif 1:
     }
 
     dst=SDL_CreateRGBSurfaceWithFormatFrom(pdst, src->w, src->h, 32, src->pitch,src->format->format);
-    
+
     if(dst==NULL){
         fprintf(stderr, "Erreur SDL_CreateRGBSurface : %s", SDL_GetError());
         free(pdst);
         SDL_UnlockSurface(src);
         return dst;
     }
-    
+
     SDL_UnlockSurface(src);
     return dst;
 }
@@ -171,9 +171,9 @@ SDL_Surface *color_effect(SDL_Surface *src, short effect){// effect 0:negatif 1:
 Uint32 SDL_GetPixel(SDL_Surface* surface, int x, int y)
 {
   int bpp = surface->format->BytesPerPixel;
- 
+
   Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
- 
+
   switch(bpp)
   {
              case 1:
@@ -189,48 +189,48 @@ Uint32 SDL_GetPixel(SDL_Surface* surface, int x, int y)
                   return *(Uint32 *)p;
              default:
                   return 0;
-  } 
- 
+  }
+
 }
- 
- 
+
+
 /*Ecrire un pixel au position x,y*/
 void SDL_SetPixel(SDL_Surface* surface, int x, int y, Uint32 pixel)
 {
-    int bpp = surface->format->BytesPerPixel; 
-    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp; 
- 
- 
-    switch(bpp) { 
-    case 1: 
-        *p = pixel; 
-        break; 
- 
-    case 2: 
-        *(Uint16 *)p = pixel; 
-        break; 
- 
-    case 3: 
-        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) { 
-            p[0] = (pixel >> 16) & 0xff; 
-            p[1] = (pixel >> 8) & 0xff; 
-            p[2] = pixel & 0xff; 
-        } else { 
-            p[0] = pixel & 0xff; 
-            p[1] = (pixel >> 8) & 0xff; 
-            p[2] = (pixel >> 16) & 0xff; 
-        } 
-        break; 
- 
-    case 4: 
- 
-        *(Uint32 *)p = pixel; 
-        break; 
-    }  
- 
+    int bpp = surface->format->BytesPerPixel;
+    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+
+    switch(bpp) {
+    case 1:
+        *p = pixel;
+        break;
+
+    case 2:
+        *(Uint16 *)p = pixel;
+        break;
+
+    case 3:
+        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+            p[0] = (pixel >> 16) & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = pixel & 0xff;
+        } else {
+            p[0] = pixel & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = (pixel >> 16) & 0xff;
+        }
+        break;
+
+    case 4:
+
+        *(Uint32 *)p = pixel;
+        break;
+    }
+
 }
 SDL_Surface * rotate_img(SDL_Surface *src,int angle){// angle multiple de 90
-  
+
   if(angle%90 != 0){
 
     fprintf(stderr, "\nRotation impossible: angle n'est pas un multiple de 90 ");
@@ -287,7 +287,7 @@ SDL_Surface* rotate_img_a(SDL_Surface* src, float angle)
  int x_src,y_src,x_dest,y_dest;
  int pos_x,pos_y;
  Uint32 pixel;
- 
+
 
  r = angle*M_PI / 180.0;
  r_cos= cos(r);
@@ -303,14 +303,14 @@ SDL_Surface* rotate_img_a(SDL_Surface* src, float angle)
  y_dest = dest->h/2.;
  x_src = src->w/2.;
  y_src = src->h/2.;
- 
+
  for(j=0;j<dest->h;j++)
   for(i=0;i<dest->w;i++)
   {
 
    pos_x = (ceil (r_cos * (i-x_dest) + r_sin * (j-y_dest) + x_src));
    pos_y = (ceil (-r_sin * (i-x_dest) + r_cos * (j-y_dest) + y_src));
-   
+
    if (pos_x>=0 && pos_x< src->w && pos_y>=0 && pos_y< src->h)
    {
      pixel = SDL_GetPixel(src,pos_x,pos_y);
@@ -334,11 +334,10 @@ void apply_rotate(int id,int angle){
 
   dest=rotate_img_a(src,angle);
   set_sf_by_id(id,dest);
-  
+
   SDL_Window *wd=get_w_by_id(id);
   char *title=malloc(NAME_LEN);
   strcpy(title,SDL_GetWindowTitle(wd));
-  printf("%s\n",title);
   SDL_DestroyWindow(wd);
   SDL_Window *wd2=creat_window(title,dest->h,dest->w);
   set_w_by_id(id,wd2);
@@ -380,10 +379,8 @@ void apply_resize(int id,int w,int h){
   SDL_Window *wd=get_w_by_id(id);
   char *title=malloc(NAME_LEN);
   strcpy(title,SDL_GetWindowTitle(wd));
-  printf("%s\n",title);
   SDL_DestroyWindow(wd);
   //free(wd);
-  printf("%s\n",title);
   dest=new_dim_img(src,w,h);
   set_sf_by_id(id,dest);
   SDL_Window *wd2=NULL;
@@ -395,13 +392,13 @@ void apply_resize(int id,int w,int h){
 
 
 SDL_Surface *cut_img(SDL_Surface *src,int pos_x,int by,int w,int h){
-   
+
   if(pos_x+w > src->w || by+h > src->h){
-    
+
     fprintf(stderr, "\nRecadrage impossible: debordement sur l'image");
     return NULL;
   }
-  
+
   SDL_Surface *dst=SDL_CreateRGBSurface(0,w,h, 32, 0,0,0,0);
   SDL_Rect r1,r2;
   r1= (SDL_Rect) {pos_x,by,w,h};
@@ -436,7 +433,7 @@ void apply_cut(int id,int i1,int j1,int i2,int j2){
 SDL_Surface *enlarge_img(SDL_Surface *src,int gate,int r,int g,int b){
 
   if(gate <0){
-    
+
     fprintf(stderr, "\nAgrandissement impossible");
     return NULL;
   }
@@ -462,13 +459,13 @@ void apply_enlarge(int id,int gate,int r,int g,int b){
 
   dest=enlarge_img(src,gate,r,g,b);
   set_sf_by_id(id,dest);
-  
+
   SDL_Window *wd=get_w_by_id(id);
   char *title=malloc(NAME_LEN);
   strcpy(title,SDL_GetWindowTitle(wd));
   printf("%s\n",title);
   SDL_DestroyWindow(wd);
-  
+
   SDL_Window *wd2=creat_window(title,dest->h,dest->w);
   set_w_by_id(id,wd2);
   reset_content(wd2,1);

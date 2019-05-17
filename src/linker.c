@@ -48,7 +48,7 @@ int (*call_func[]) (command*) =                                                 
 void delete_cimpfiles(char* file)                                               // sert à supprimer l'historique d'une image
 {
      char dest[254];
-     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);                    // les fichiers historique sont au repertoire HOME
+     sprintf(dest,"%s_cimphistory",file);                    // les fichiers historique sont au repertoire HOME
      remove(dest);
 
      char tmp[254];
@@ -73,27 +73,25 @@ int call_open(command* cmd)
      sprintf(temp,"cp %s %s_cimpbackup",cmd->files[0],cmd->files[0]);
      system(temp);
 
-     if ( get_id_name(cmd->files[0]) == -1 )                                         // si le fichier n'est pas déja chargé
-     {
-          if ( cmd->argc == 2 )                                                 // ouverture dans une nouvelle fenetre
-          {
 
-               open_new(cmd->files[0]);
-               int id = get_id_name(cmd->files[0]);
-               set_index_by_id(id,0);
-               refresh_selection_list();
-               return 0;
-          }
-          else                                                                  // ouverture dans une fenetre existante
-          {
-               int id = get_id_name(cmd->files[1]);                             // recuperer l'id de l'ancienne fenetre
-               open_old(cmd->files[0],id);                                      // ouvrir l'image dans cette derniere
-               set_index_by_id(id,0);
-               refresh_selection_list();                                        // rafraishir la liste des fenetre
-               return 0;
-          }
+     if ( cmd->argc == 2 )                                                 // ouverture dans une nouvelle fenetre
+     {
+
+          open_new(cmd->files[0]);
+          int id = get_id_name(cmd->files[0]);
+          set_index_by_id(id,0);
+          refresh_selection_list();
+          return 0;
      }
-     fprintf(stderr, "%s: already loaded\n",cmd->files[0] );
+     else                                                                  // ouverture dans une fenetre existante
+     {
+          int id = get_id_name(cmd->files[1]);                             // recuperer l'id de l'ancienne fenetre
+          open_old(cmd->files[0],id);                                      // ouvrir l'image dans cette derniere
+          set_index_by_id(id,0);
+          refresh_selection_list();                                        // rafraishir la liste des fenetre
+          return 0;
+     }
+
      return -1;
 }
 
