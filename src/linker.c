@@ -96,10 +96,10 @@ int call_open(command* cmd)
 int call_save(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
-     char *ext = strrchr(cmd->files[0], '.');                                   // recuperer l'extension du fichier a sauvegarder
-     if (strcasecmp(ext,".bmp"))                                                // cas fichier bmp
+     char *ext = strrchr(cmd->files[1], '.');                                   // recuperer l'extension du fichier a sauvegarder
+     if (!strcasecmp(ext,".bmp"))                                                // cas fichier bmp
           return save_bmp(id,cmd->files[1]);
-     else if (strcasecmp(ext,".png"))                                           // cas fichier jpg
+     else if (!strcasecmp(ext,".png"))                                           // cas fichier jpg
           return save_png(id,cmd->files[1]);
      /*else if (strcasecmp(ext,".jpg"))
           return save_jpg_img(id,cmd->files[1]);
@@ -189,7 +189,7 @@ int call_symetric(command* cmd)
 int call_rotate(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
-     apply_rotate(id,cmd->value);                                               // rotation
+     apply_rotate(id,cmd->value);                                           // rotation
      refresh_selection_list();
      return 0;
 }
