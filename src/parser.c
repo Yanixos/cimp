@@ -323,7 +323,7 @@ char** make_args(int argc, int n, char* cmd_name, char*filename,char **args)    
 void add_cmd_to_history(char *cmd,char* file)                                   // ajouter une commande au fichier d'historique
 {
      char dest[254];
-     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);
+     sprintf(dest,"%s_cimphistory",file);
      FILE * fp;
 
      if ( ( fp = fopen(dest,"a+") ) == NULL)
@@ -1073,6 +1073,6 @@ int parse_exit(char** args, command* cmd)
 void clean_trash()
 {
      char dest[254];
-     sprintf(dest,"rm %s/.*_cimphistory 2>/dev/null 1>&2",getenv("HOME"));                       // supprimer les fichiers historiques qui sont au repertoire HOME
+     sprintf(dest,"rm *_cimphistory 2>/dev/null 1>&2 && rm *_cimpbackup 2>/dev/null 1>&2");                         // supprimer les fichiers historiques qui sont au repertoire HOME
      system(dest);
 }
