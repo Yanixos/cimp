@@ -73,7 +73,7 @@ int call_open(command* cmd)
      sprintf(temp,"cp %s %s_cimpbackup",cmd->files[0],cmd->files[0]);
      system(temp);
 
-     if ( ! exist_file(cmd->files[0]) )                                         // si le fichier n'est pas déja chargé
+     //if ( ! exist_file(cmd->files[0]) )                                         // si le fichier n'est pas déja chargé
      //{
           if ( cmd->argc == 2 )                                                 // ouverture dans une nouvelle fenetre
           {
@@ -92,7 +92,7 @@ int call_open(command* cmd)
                refresh_selection_list();                                        // rafraishir la liste des fenetre
                return 0;
           }
-     }
+     //}
      fprintf(stderr, "%s: already loaded\n",cmd->files[0] );
      return -1;
 }
