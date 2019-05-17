@@ -91,7 +91,7 @@ char* syntax[] =                                                          // la 
 {
     "open filename.EXT [-o filename_.EXT]\n",
     "save filename.EXT -o filename.EXT\n",
-    "set_bg filename.EXT -c color\n",
+    "set_bg color\n",
     "select_rect filename.EXT [-m ADD|SUB|OVERWRITE] [-p (X1,Y1) (X2,Y2)]\n",
     "select_free filename.EXT [-m ADD|SUB|OVERWRITE]\n",
     "select_color filename.EXT [-m ADD|SUB|OVERWRITE] -c color [-t 0-100]\n",
@@ -323,7 +323,7 @@ char** make_args(int argc, int n, char* cmd_name, char*filename,char **args)    
 void add_cmd_to_history(char *cmd,char* file)                                   // ajouter une commande au fichier d'historique
 {
      char dest[254];
-     sprintf(dest,"%s/.%s_history",getenv("HOME"),file);
+     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);
      FILE * fp;
 
      if ( ( fp = fopen(dest,"a+") ) == NULL)
@@ -359,7 +359,7 @@ void debug(char* line, command* cmd, char** args)                               
      if ( cmd->colors[0] )
           fprintf(stdout,"\t|colors[0]: %d %d %d\n",cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b);
      if ( cmd->colors[1] )
-          fprintf(stdout,"\t|colors[1]: %d %d %d\n",cmd->colors[1]->r,cmd->colors[0]->g,cmd->colors[0]->b);
+          fprintf(stdout,"\t|colors[1]: %d %d %d\n",cmd->colors[1]->r,cmd->colors[1]->g,cmd->colors[1]->b);
 }
 
 int parse_by_mode (char* line, char** args, command* cmd,int flag)              // parser les commandes selon les leur batch mode
@@ -373,12 +373,12 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
           return -1;
      }
 
-     if ( BATCH_MODE == 0 )                                                     // pas de batch mode
+     if ( BATCH_MODE == 0 || ( BATCH_MODE > 0 && cmd->index > 22 ) )            // pas de batch mode
      {
           if ( ! parse_func[cmd->index](args,cmd) )                             // parser la commande
           {
-               if ( !call_command(cmd) )                                        // si elle s'execute bien
-                    if ( flag && cmd->index < 23 )                              // on vérifier qu'elle doit etre ajouter à  l'historique
+               if ( cmd->index < 31 && !call_command(cmd) )                     // si elle s'execute bien
+                    if ( flag && cmd->index < 23  )                             // on vérifier qu'elle doit etre ajouter à  l'historique
                          add_cmd_to_history(line,cmd->files[0]);                // ajouter à l'historique
           }
      }
@@ -391,7 +391,7 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                args[1] = strdup(list[i]);                                       // rendre ce fichier comme argument d'une commande simple
                if ( ! parse_func[cmd->index](args,cmd) )                        // parser la commande
                {
-                    if ( !call_command(cmd) )                                   // si elle s'execute bien
+                    if ( cmd->index < 31 &&  !call_command(cmd) )               // si elle s'execute bien
                          if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
                               add_cmd_to_history(line,cmd->files[0]);           // ajouter à l'historique
                }
@@ -408,7 +408,7 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                char** new_args = make_args(cmd->argc, n, args[0],list[i],args); // rendre ce fichier comme argument d'une commande simple
                if ( ! parse_func[cmd->index](new_args,cmd) )                    // parser
                {
-                    if ( !call_command(cmd) )                                   // si la commande s'execute bien
+                    if ( cmd->index < 31 &&  !call_command(cmd) )               // si la commande s'execute bien
                          if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
                               add_cmd_to_history(line,cmd->files[0]);           // ajouter la commande à l'historique
                }
@@ -481,21 +481,17 @@ int parse_save(char** args, command* cmd)
 
 int parse_set_bg(char** args, command* cmd)
 {
-     // set_bg filename.EXT -c color
+     // set_bg color
 
      cmd->colors[0] = (color*) calloc(1,sizeof(color));
      color *c1 = cmd->colors[0];
-     if ( cmd->argc != 4 || check_extension(args[1]) || strcmp(args[2],"-c") || check_color(args[3],c1) )
+     if ( cmd->argc != 2 || check_color(args[1],c1) )
      {
           fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
           cmd = NULL ;
           return -1;
      }
-     else
-     {
-          cmd->files[0] = strdup(args[1]);
-          return 0;
-     }
+     return 0;
 }
 
 int parse_select_rect(char** args, command* cmd)
@@ -812,10 +808,10 @@ int parse_replace(char** args, command* cmd)
      cmd->colors[0] = (color*) calloc(1,sizeof(color));
      cmd->colors[1] = (color*) calloc(1,sizeof(color));
      color *c1 = cmd->colors[0];
-     color *c2 = cmd->colors[0];
+     color *c2 = cmd->colors[1];
 
      if (
-          (cmd->argc != 4 && cmd->argc != 5) ||  check_extension(args[1]) || \
+          (cmd->argc != 4 && cmd->argc != 6) ||  check_extension(args[1]) || \
           (check_color(args[2],c1) || check_color(args[3],c2) ) || \
           (cmd->argc == 6 && strcmp(args[4],"-t") && ( (atoi(args[5]) < 1 ) || (atoi(args[5]) > 100 ) ) )
         )
@@ -854,15 +850,20 @@ int parse_gray(char** args, command* cmd)
 
 int parse_black_white(char** args, command* cmd)
 {
-     // black_white filename.EXT -r 0-200
-     if ( cmd-> argc != 4 || check_extension(args[1]) || strcmp(args[2],"-r") || atoi(args[3]) < 1 || atoi(args[3]) > 200)
+     // black_white filename.EXT [-r 0-200]
+     if ( ( (cmd->argc != 2 && cmd->argc != 4 ) || check_extension(args[1]) ) ||\
+          ( (cmd->argc == 4) && ( strcmp(args[2],"-r") || atoi(args[3]) < 1 || atoi(args[3]) > 200) )
+        )
      {
           fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
           cmd = NULL ;
           return -1;
      }
      cmd->files[0] = strdup(args[1]);
-     cmd->value = atoi(args[3]);
+     if ( cmd->argc == 4 )
+          cmd->value = atoi(args[3]);
+     else
+          cmd->value = 50;
      return 0;
 }
 
@@ -1012,18 +1013,14 @@ int parse_cd(char** args, command* cmd)
 
 int parse_ls(char** args, command* cmd)
 {
-     if ( cmd->argc > 2 )
+     char ls[SIZE];
+     sprintf(ls,"ls");
+     for (int i=1; i < cmd->argc; i++ )
      {
-          fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
-          cmd = NULL ;
-          return -1;
+          strcat(ls, " ");
+          strcat(ls,args[i]);
      }
 
-     char ls[SIZE];
-     if (cmd->argc == 1 )
-          sprintf(ls,"ls");
-     else
-          sprintf(ls,"ls %s",args[1]);
      pid_t pid = fork();
 
      if ( pid == 0 )

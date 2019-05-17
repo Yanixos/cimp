@@ -8,6 +8,8 @@
 #include "selection.h"
 #include "selection_effects.h"
 
+int init = 0;
+
 int (*call_func[]) (command*) =                                                 // la liste des fonctions qui appellent les autres fonctions pour executer le commande
 {
     &call_open,
@@ -43,27 +45,41 @@ int (*call_func[]) (command*) =                                                 
     &call_execute_script
 };
 
-void delete_history(char* file)                                                 // sert à supprimer l'historique d'une image
+void delete_cimpfiles(char* file)                                               // sert à supprimer l'historique d'une image
 {
      char dest[254];
-     sprintf(dest,"%s/.%s_history",getenv("HOME"),file);                        // les fichiers historique sont au repertoire HOME
-     int status = remove(dest);                                                 // supprimer le fichier
+     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);                    // les fichiers historique sont au repertoire HOME
+     remove(dest);
 
-     if ( status )
-          fprintf(stderr,"Coudln't delete history file of %s\n",file);
+     char tmp[12+strlen(file)];
+     sprintf(tmp,".cimpbackup_%s",file);
+     remove(tmp);                                                               // supprimer le fichier de backup
 }
 
 int call_command(command* cmd)
 {
+     if ( ! init )
+     {
+          init = 1;
+          sdl_init();
+     }
      return call_func[cmd->index](cmd);                                         // appeler la fonction selon son index
 }
 
 int call_open(command* cmd)
 {
+     command* t = (command*) calloc(1,sizeof(command));
+     t->files = (char**) calloc(1,2*sizeof(char*));
+     t->files[0] = strdup(cmd->files[0]);
+     t->files[1] = (char*) calloc(1,strlen(cmd->files[0])+12);
+     sprintf(t->files[1],".cimpbackup_%s",cmd->files[0]);
+
      if ( cmd->argc == 2 )                                                      // ouverture dans une nouvelle fenetre
      {
           open_new(cmd->files[0]);
           refresh_selection_list();
+          call_save(t);                                                         // sauvegarder le backup  pour la fonction de undo redo
+          free(t);
           return 0;
      }
      else                                                                       // ouverture dans une fenetre existante
@@ -71,6 +87,8 @@ int call_open(command* cmd)
           int id = get_id_name(cmd->files[1]);                                  // recuperer l'id de l'ancienne fenetre
           open_old(cmd->files[0],id);                                           // ouvrir l'image dans cette derniere
           refresh_selection_list();                                             // rafraishir la liste des fenetre
+          call_save(t);                                                         // sauvegarder le backup  pour la fonction de undo redo
+          free(t);
           return 0;
      }
 }
@@ -93,9 +111,8 @@ int call_save(command* cmd)
 
 int call_set_bg(command* cmd)
 {
-     fprintf(stdout,"TODO\n");
-     return 0; //******************************** TO IMPLEMENT HERE
-     //return set_bg(cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b);
+     set_bg_color(cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b);
+     return 0;
 }
 
 int call_select_rect(command* cmd)
@@ -103,9 +120,7 @@ int call_select_rect(command* cmd)
      int id = get_id_name(cmd->files[0]);
 
      if (cmd->option < 10)                                                      // cas selection avec main
-     {
           select_rect(id,cmd->option);
-     }
      else                                                                       // cas selection avec pixels
           select_rect_coord(id,cmd->option-10,cmd->pixels[0]->x,cmd->pixels[0]->y,cmd->pixels[1]->x,cmd->pixels[1]->y);
 
@@ -209,6 +224,7 @@ int call_fill(command* cmd)
 int call_replace(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);                                       // remplacer une couleur par une autre
+     printf("(%d,%d,%d) (%d,%d,%d)\n",cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b,cmd->colors[1]->r,cmd->colors[1]->g,cmd->colors[1]->b);
      apply_replace_color(id,cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b,cmd->colors[1]->r,cmd->colors[1]->g,cmd->colors[1]->b,cmd->value);
      return 0;
 }
@@ -223,7 +239,7 @@ int call_negative(command* cmd)
 int call_gray(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
-     apply_grayscale(id,cmd->value);                                                 // appliquer le mode graysale
+     apply_grayscale(id);                                                       // appliquer le mode graysale
      return 0;
 }
 
@@ -281,7 +297,7 @@ int call_close(command* cmd)
      int id = get_id_name(cmd->files[0]);
      close_window(id);                                                          // fermer une fenetre
      refresh_selection_list();
-     delete_history(cmd->files[0]);
+     delete_cimpfiles(cmd->files[0]);
      return 0;
 }
 
@@ -306,5 +322,5 @@ int call_rename_script(command* cmd)
 }
 int call_execute_script(command* cmd)
 {
-     return execute_script(cmd->files[0]);                                      // execution d'une script cimp 
+     return execute_script(cmd->files[0]);                                      // execution d'une script cimp
 }

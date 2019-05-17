@@ -11,16 +11,16 @@
 #define SIZE_Y 500
 
 //Fonctions internes
-//Fonctions standards sur les listes 
+//Fonctions standards sur les listes
 
 node * allocNode(SDL_Window *w,SDL_Surface *img, char *name);
 node * next(node * n);
 void addNode(node ** list, SDL_Window *w,SDL_Surface *img,char *name);
 void deleteNode(node **list,int id);
+int length(struct node * l);
 node * find_node(int in);
 void update_node(node* n,SDL_Window *w,SDL_Surface *t,char *name);
-int length(struct node * l);
-void freelist(node * l);
+
 
 // Fonctions SDL
 void sdl_init();
@@ -36,42 +36,42 @@ int save_png_img(SDL_Surface *img, const char *path);
 /*
 int main(int argc,char *argv[]){
 
-    
+
     SDL_Window *window = NULL;
     SDL_Surface *surface = NULL;
-    
+
     sdl_init();
     open_new("../img/test1.bmp");
     open_new("../img/test.bmp");
-    
+
     printf("\nTaille de liste %d",length(list));
     open_old("../img/test.bmp",1);
 
     printf("id de ../img/test.bmp  est %d \n", get_id_name("../img/test.bmp"));
 
     //save_png_img(get_sf_by_id(1),"../img/out.png");
-    
+
     int rep=1;
     do {
         SDL_Event e;
         if (SDL_PollEvent(&e)) {
-	    
+
 	        switch (e.type) {
-		
+
 	          case SDL_QUIT:
-		          printf("fermeture de la fenetre.\n"); 
+		          printf("fermeture de la fenetre.\n");
 		          rep=0;
 		          break;
-		
+
 	          case SDL_MOUSEMOTION :
-		          printf("deplacement : %d %d\n", 
-		           e.motion.x, 
+		          printf("deplacement : %d %d\n",
+		           e.motion.x,
 		           e.motion.y);
 		          break;
           }
         }
     } while (rep != 0);
-    
+
     close_window(1);
     close_window(2);
 
@@ -117,7 +117,7 @@ void addNode(node ** list, SDL_Window *w,SDL_Surface * img,char *name){ //ajoute
   else{
     n->id=1;
   }
-  
+
   *list=n;
 }
 
@@ -125,20 +125,25 @@ void deleteNode(node **list,int id){//supprime un noeud selon son ID
 
   if(list == NULL){
     fprintf(stderr, "Echec de Supression du noeud car liste vide\n");
-    exit(1);
+    return;
   }
   node *p=*list;
   node *last=*list;
-  
+
   while(p!=NULL){
     if(p->id==id){
       affectNext(last,next(p));
       if(p==*list)
         *list=next(p);
+      SDL_FreeSurface(p->img);
+      SDL_DestroyWindow(p->w);
+      free(p->name);
       free(p);
    }
    else
-    last=p;
+   {
+        last=p;
+   }
     p=next(p);
   }
 }
@@ -148,7 +153,7 @@ int length(struct node * l){ //Retourne la taille de la liste des fenetres
   else return (1+length(next(l)));
 }
 
-node * find_node(int in){ // Retourne l'@ noeud ayant id=in et NULL si introuvable  
+node * find_node(int in){ // Retourne l'@ noeud ayant id=in et NULL si introuvable
   if(list==NULL)
     return NULL;
   node * p=list;
@@ -161,22 +166,23 @@ node * find_node(int in){ // Retourne l'@ noeud ayant id=in et NULL si introuvab
 
   return NULL;
 }
+
 void update_node(node* n,SDL_Window *w,SDL_Surface *t,char *name){
   if (n==NULL) {
         fprintf(stderr,"\nEchec de Mise à jour du noeud \n");
-        exit(1);
+        return;
   }
   n->w=w;
   n->img=t;
   n->name=realloc(n->name,sizeof(name));
   if(n->name == NULL){
     fprintf(stderr, "\nRealloc erreur\n");
-    exit(-1);
+    return;
   }
   strcpy(n->name,name);
 }
 SDL_Surface * get_sf_by_id(int in){ // Retourne img noeud ayant id=in NULL si introuvable
-  
+
   node *n=find_node(in);
   if(n==NULL)
     return NULL;
@@ -206,12 +212,11 @@ int get_id_name(char *name){ //Retourne -1 si inexistant
 }
 
 /* Lébiration d'espace occupé par une lise */
-void freelist(node * l){
-
-  while(l!=NULL){
-
-    free(l);
-    l=next(l);
+void freelist(){
+  int id=length(list);
+  while(length(list)!=0){
+    deleteNode(&list,id);
+    id--;
   }
 }
 /*--------------------------------------------------------------------------------------------------*/
@@ -223,19 +228,19 @@ void sdl_init(){
                 "\nImpossible d'initialiser SDL :  %s\n",
                 SDL_GetError()
 		);
-        exit(1);
+        return;
     }
     //atexit(SDL_Quit);
 }
 
 SDL_Surface* load_img(char *filename){
-   
+
      SDL_Surface *surface =IMG_Load(filename);
     if (surface == NULL) {
-  fprintf(stderr,"/nImpossible de charger l'image : %s\n", 
+  fprintf(stderr,"/nImpossible de charger l'image : %s\n",
     SDL_GetError()
     );
-  exit(1);
+  return NULL;
     }
     return surface;
 
@@ -310,22 +315,22 @@ SDL_Window * creat_window(char *title,int high,int width){
 	 high,                         /* hauteur */
 	 0                            /* drapeaux, cf, la doc.  */
 	 );
-     
+
     if (window == NULL) {
 	fprintf(stderr,
-		"\nCreation de la fenetre impossible : %s\n", 
+		"\nCreation de la fenetre impossible : %s\n",
 		SDL_GetError()
 		);
-        exit(1);
+        return NULL;
     }
 
     return window;
 }
 
 void display_img(SDL_Window *window,SDL_Surface *surface){
-    
+
      SDL_Surface *winSurface = SDL_GetWindowSurface(window);
-     SDL_Rect dest_rect = (SDL_Rect) {POSX,POSY,surface->w,surface->h};
+     //SDL_Rect dest_rect = (SDL_Rect) {POSX,POSY,surface->w,surface->h};
      SDL_BlitSurface(surface, NULL, winSurface, NULL);
      SDL_UpdateWindowSurface(window);
 }
@@ -344,21 +349,18 @@ void reset_content(SDL_Window* window, short render){
 }
 
 void close_window(int id_win){
-    node *n=find_node(id_win);
-    SDL_FreeSurface(n->img);
-    SDL_DestroyWindow(n->w);
-    free(n->name);
     deleteNode(&list,id_win);
 }
 
-SDL_Surface *open_new(char *path){ // que des bmp
+SDL_Surface *open_new(char *path){
 
   SDL_Window *window = NULL;
   SDL_Surface *surface = NULL;
   //surface=load_bmp_img(path);
   surface=load_img(path);
+  if (!surface) return NULL;
   char *nameWin=malloc(256);
-  
+
   if(list != NULL)
     sprintf(nameWin,"Window_ID: %d file: %s",(list->id)+1,path);
   else
@@ -381,12 +383,12 @@ SDL_Surface * open_old(char * path,int id_win){
   if (n==NULL) {
   /* noeud introuvable*/
         fprintf(stderr,"\nFentre avec Id:%d introuvable\n",id_win);
-        exit(1);
+        return NULL;
   }
   window=n->w;
   //surface=load_bmp_img(path);
   surface=load_img(path);
-  
+
   //Editer la taille de la fentre selon l'image
   SDL_SetWindowSize(window,surface->w,surface->h);
   display_img(window,surface);
@@ -424,7 +426,40 @@ void get_bg_color(int *r,int *g,int *b){
   SDL_FreeFormat(format);
 }
 
+void set_sf_by_id(int id,SDL_Surface *s){
+
+  node *n=find_node(id);
+  if(n==NULL){
+    printf("\nID not found (set_sf_by_id)");
+    return;
+  }
+  SDL_FreeSurface(n->img);
+  n->img=s;
+}
+
+
+void set_w_by_id(int id,SDL_Window *w){
+
+  node *n=find_node(id);
+  if(n==NULL){
+    printf("\nID not found (set_sf_by_id)");
+    return;
+  }
+
+  n->w=w;
+}
+
+void set_name_by_id(int id,char *name){
+
+  node *n=find_node(id);
+  if(n==NULL){
+    printf("\nID not found (set_sf_by_id)");
+    return;
+  }
+
+  n->name=name;
+}
+
 SDL_Window * test_window(){
   return list->w;
 }
-

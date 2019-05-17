@@ -124,3 +124,15 @@ int execute_script(char* filename)
      fclose(fd);
      return -1;
 }
+/*
+int undo(char* filename)
+{
+     char dest[254];
+     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);
+     if( access( filename, F_OK|R_OK ) != -1 )
+     {
+
+     }
+
+}
+*/
