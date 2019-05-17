@@ -91,7 +91,6 @@ int call_open(command* cmd)
           return 0;
      }
 
->>>>>>> fbe98db3a9be986a067880a77faf7e9f59da590e
      return -1;
 }
 
