@@ -2,13 +2,15 @@
 #include <check.h>
 #include <SDL2/SDL.h>
 #include "../src/win_img.h"
+#include "win_img_tests.h"
+#include "../src/selection.h"
 
 START_TEST(open_new_window){
 
   SDL_Surface * surf = open_new("../img/test1.bmp");
   refresh_selection_list();
   
-  ck_assert_msg(surf ==NULL,"open image in new window failed");
+  ck_assert_msg(surf !=NULL,"open image in new window failed");
  
   close_window(1);
   refresh_selection_list();
@@ -18,10 +20,10 @@ START_TEST(open_old_window){
 
   SDL_Surface * surf1 = open_new("../img/test1.bmp");
   refresh_selection_list();
-  SDL_Surface * surf2 = open_old("../img/test1.bmp");
+  SDL_Surface * surf2 = open_old("../img/test1.bmp",1);
   refresh_selection_list();
   
-  ck_assert_msg(surf2==NULL,"open image in old window failed");
+  ck_assert_msg(surf2!=NULL,"open image in old window failed");
  
   close_window(1);
   refresh_selection_list();
@@ -46,7 +48,7 @@ START_TEST(save_png_img){
   refresh_selection_list();
   
   int rep=save_png(1,"tmp_test.png");
-  ck_assert_msg(!rep,"saving bmp image failed");
+  ck_assert_msg(!rep,"saving png image failed");
   system("rm -f tmp_test.png");
  
   close_window(1);
