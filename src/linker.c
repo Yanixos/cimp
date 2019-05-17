@@ -51,12 +51,12 @@ void delete_cimpfiles(char* file)                                               
      sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);                    // les fichiers historique sont au repertoire HOME
      remove(dest);
 
-     char tmp[12+strlen(file)];
-     sprintf(tmp,".cimpbackup_%s",file);
+     char tmp[254];
+     sprintf(tmp,"%s_cimpbackup",file);
      remove(tmp);                                                               // supprimer le fichier de backup
 }
 
-int call_command(command* cmd)
+int call_command(command* cmd, char* line, int flag)
 {
      if ( ! init )
      {
@@ -68,38 +68,42 @@ int call_command(command* cmd)
 
 int call_open(command* cmd)
 {
-     command* t = (command*) calloc(1,sizeof(command));
-     t->files = (char**) calloc(1,2*sizeof(char*));
-     t->files[0] = strdup(cmd->files[0]);
-     t->files[1] = (char*) calloc(1,strlen(cmd->files[0])+12);
-     sprintf(t->files[1],".cimpbackup_%s",cmd->files[0]);
 
-     if ( cmd->argc == 2 )                                                      // ouverture dans une nouvelle fenetre
-     {
-          open_new(cmd->files[0]);
-          refresh_selection_list();
-          call_save(t);                                                         // sauvegarder le backup  pour la fonction de undo redo
-          free(t);
-          return 0;
-     }
-     else                                                                       // ouverture dans une fenetre existante
-     {
-          int id = get_id_name(cmd->files[1]);                                  // recuperer l'id de l'ancienne fenetre
-          open_old(cmd->files[0],id);                                           // ouvrir l'image dans cette derniere
-          refresh_selection_list();                                             // rafraishir la liste des fenetre
-          call_save(t);                                                         // sauvegarder le backup  pour la fonction de undo redo
-          free(t);
-          return 0;
-     }
+     char temp[254];
+     sprintf(temp,"cp %s %s_cimpbackup",cmd->files[0],cmd->files[0]);
+     system(temp);
+
+     //if ( ! exist_file(cmd->files[0]) )                                         // si le fichier n'est pas déja chargé
+     //{
+          if ( cmd->argc == 2 )                                                 // ouverture dans une nouvelle fenetre
+          {
+
+               open_new(cmd->files[0]);
+               int id = get_id_name(cmd->files[0]);
+               set_index_by_id(id,0);
+               refresh_selection_list();
+               return 0;
+          }
+          else                                                                  // ouverture dans une fenetre existante
+          {
+               int id = get_id_name(cmd->files[1]);                             // recuperer l'id de l'ancienne fenetre
+               open_old(cmd->files[0],id);                                      // ouvrir l'image dans cette derniere
+               set_index_by_id(id,0);
+               refresh_selection_list();                                        // rafraishir la liste des fenetre
+               return 0;
+          }
+     //}
+     fprintf(stderr, "%s: already loaded\n",cmd->files[0] );
+     return -1;
 }
 
 int call_save(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
-     char *ext = strrchr(cmd->files[0], '.');                                   // recuperer l'extension du fichier a sauvegarder
-     if (strcasecmp(ext,".bmp"))                                                // cas fichier bmp
+     char *ext = strrchr(cmd->files[1], '.');                                   // recuperer l'extension du fichier a sauvegarder
+     if (!strcasecmp(ext,".bmp"))                                               // cas fichier bmp
           return save_bmp(id,cmd->files[1]);
-     else if (strcasecmp(ext,".png"))                                           // cas fichier jpg
+     else if (!strcasecmp(ext,".png"))                                          // cas fichier jpg
           return save_png(id,cmd->files[1]);
      /*else if (strcasecmp(ext,".jpg"))
           return save_jpg_img(id,cmd->files[1]);
@@ -124,6 +128,9 @@ int call_select_rect(command* cmd)
      else                                                                       // cas selection avec pixels
           select_rect_coord(id,cmd->option-10,cmd->pixels[0]->x,cmd->pixels[0]->y,cmd->pixels[1]->x,cmd->pixels[1]->y);
 
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -131,6 +138,10 @@ int call_select_free(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      select_free(id,cmd->option);                                               // selection libre
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -138,6 +149,10 @@ int call_select_color(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);                                       // selection par couleur
      select_color(id,cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b,cmd->value,cmd->option);
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -145,6 +160,10 @@ int call_unselect(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      deselect_all(id);                                                          // deselection
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -157,12 +176,16 @@ int call_copy(command* cmd)
 
 int call_cut(command* cmd)
 {
-     int r=255,g=255,b=255;
+     int r, g, b;
+     get_bg_color(&r,&g,&b);
      int id = get_id_name(cmd->files[0]);
      if ( cmd->argc == 2 )
           cut(id,r,g,b);                                                        // cas couper sans couleur d'arriere plan
      else
           cut(id,cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b);        // cas couper avec couleur d'arriere plan
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
 
      return 0;
 }
@@ -171,6 +194,10 @@ int call_paste(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      paste(id,cmd->pixels[0]->x,cmd->pixels[0]->y);                             // coller
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -183,6 +210,9 @@ int call_symetric(command* cmd)
      else
           apply_horizontal(id);                                                 // symetrie horizenal
 
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -190,7 +220,11 @@ int call_rotate(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_rotate(id,cmd->value);                                               // rotation
+
      refresh_selection_list();
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -203,6 +237,9 @@ int call_scale(command* cmd)
           apply_enlarge(id,cmd->value,cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b);       // scale avec zoom
 
      refresh_selection_list();
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -210,7 +247,11 @@ int call_resize(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_resize(id,cmd->pixels[0]->x,cmd->pixels[0]->y);                      // redimensionner
+
      refresh_selection_list();
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -218,14 +259,21 @@ int call_fill(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_fill(id,cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b);      // remplissage avec une couleur donnée
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
 int call_replace(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);                                       // remplacer une couleur par une autre
-     printf("(%d,%d,%d) (%d,%d,%d)\n",cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b,cmd->colors[1]->r,cmd->colors[1]->g,cmd->colors[1]->b);
      apply_replace_color(id,cmd->colors[0]->r,cmd->colors[0]->g,cmd->colors[0]->b,cmd->colors[1]->r,cmd->colors[1]->g,cmd->colors[1]->b,cmd->value);
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -233,6 +281,10 @@ int call_negative(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_negative(id);                                                        // appliquer le mode negative
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -240,6 +292,10 @@ int call_gray(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_grayscale(id);                                                       // appliquer le mode graysale
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -247,6 +303,10 @@ int call_black_white(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_blackwhite(id,cmd->value);                                           // appliquer le mode noir et blanc
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -254,6 +314,10 @@ int call_brightness(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_brightness(id,cmd->value);                                           // appliquer le mode luminosité
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -261,6 +325,10 @@ int call_contrast(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_contrast(id,cmd->value);                                             // appliquer le mode de ontrast
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -268,6 +336,10 @@ int call_blur(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_blur(id,cmd->value);                                                 // appliquer le mode blur
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
@@ -275,21 +347,21 @@ int call_pixel(command* cmd)
 {
      int id = get_id_name(cmd->files[0]);
      apply_pixel(id,cmd->value);                                                // appliquer le mode pixelerization
+
+     reset_content(get_w_by_id(id), 0);
+     draw_selected_pixels(id, 1);
+
      return 0;
 }
 
 int call_undo(command* cmd)
 {
-     fprintf(stdout,"TODO\n");//***********************************
-     //return undo(cmd->files[0]);
-     return 0;
+     return undo_redo(cmd->files[0],0);
 }
 
 int call_redo(command* cmd)
 {
-     fprintf(stdout, "TODO\n");//****************************************
-     //return redo(cmd->files[0]);
-     return 0;
+     return undo_redo(cmd->files[0],1);
 }
 
 int call_close(command* cmd)
