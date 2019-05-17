@@ -70,16 +70,20 @@ void intro()
 {
      system("clear");
      fprintf(stdout, "Do you like to get a quick intro ? yes/no: " );
-     char c[4] = "" ;
-     scanf("%3s",&c);
-     while ( strcasecmp(c,"yes") && strcasecmp(c,"no") )
+     char c[4];
+     fgets(c, 4, stdin);
+     while ( strncasecmp(c,"yes",3) && strncasecmp(c,"no",2) )
      {
           fprintf(stderr, "\nWrong choice !\nyes/no: ");
-          scanf("%3s",&c);
+          fgets(c, 4, stdin);
      }
-     if ( ! strcasecmp(c,"no") )
+     if ( ! strncasecmp(c,"no",2) )
+     {
+          system("clear");
           return;
+     }
 
+     system("clear");
      fprintf(stdout, "_____________ Welcome to cimp command line interface _____________\n" );
      sleep(1);
      fprintf(stdout, "\nUse: help [command]: to get familliar with the commands\n" );
@@ -94,6 +98,7 @@ void intro()
      sleep(1);
      fprintf(stdout, "\nHave fun editing your images ^_^\n\nPress any key to continue...\n");
      getchar();
+     getc(stdin);
      system("clear");
 }
 
