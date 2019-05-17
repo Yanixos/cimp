@@ -6,8 +6,12 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <math.h>
 #include "script.h"
 #include "parser.h"
+#include "win_img.h"
+
+int fake_id = 0;
 
 int write_script(char* filename)
 {
@@ -124,15 +128,70 @@ int execute_script(char* filename)
      fclose(fd);
      return -1;
 }
-/*
-int undo(char* filename)
+
+
+int count_lines (char* filename)
 {
+    FILE* fp = fopen(filename,"r");
+    int count = 0;
+
+    for (char c = getc(fp); c != EOF; c = getc(fp))
+        if (c == '\n')
+            count = count + 1;
+
+    return count;
+}
+
+
+int undo_redo(char* filename, int ur_flag)
+{
+
      char dest[254];
-     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);
-     if( access( filename, F_OK|R_OK ) != -1 )
+     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),filename);
+
+     int nb = count_lines(dest);
+
+     int id = get_id_name(filename);
+     int pos = get_index_by_id(id);
+
+     if( nb >= 2 && access( filename, F_OK|R_OK ) != -1 )
      {
 
-     }
+          if ( ! ur_flag )
+          {
+               if ( abs(pos) < nb-1 )
+               {
+                    pos--;
+                    set_index_by_id(id,pos);
+               }
+          }
+          else
+          {
+               if ( pos < 0 )
+               {
+                    pos++;
+                    set_index_by_id(id,pos);
+               }
+          }
 
+
+          char cmd[1024];
+          if ( pos <= 0 )
+          {
+               if ( pos == 0 )
+                    pos = nb;
+
+               sprintf(cmd,"rm %s && \
+                            cp %s_cimpbackup %s && \
+                            head -n %d ~/.%s_cimphistory > ~/.temp.cimp && \
+                            sed -i 's/open %s/open %s -o %s/' ~/.temp.cimp", filename,filename,filename,pos,filename,filename,filename,filename);
+
+               system(cmd);
+               char t[254];
+               sprintf(t,"%s/.temp.cimp",getenv("HOME"));
+               execute_script(t);
+               remove(t);
+          }
+     }
+     return -1;
 }
-*/

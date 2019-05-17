@@ -20,6 +20,7 @@ int initialize_readline();                                                      
 
 int main(int argc, char **argv)
 {
+     clean_trash();                                                             // nettoyer les fichiers de la sessions precedantes en cas d'erreur de nettoyage precedemment
      intro();                                                                   // lancer l'introduction
      BATCH_MODE = 0;                                                            // batch mode est desactivé par défaut
      int ret;
@@ -46,6 +47,7 @@ int main(int argc, char **argv)
 
           if ( !strcmp(line,"") )                                               // ligne vide
                continue;
+
           ret = parse_by_mode(line,args,cmd,1);                                 // parser la command
           free(cmd);
           free(args);
@@ -63,6 +65,7 @@ int main(int argc, char **argv)
 void intHandler(int n)
 {
      fprintf(stderr,"\n");
+     clean_trash();
      exit(EXIT_FAILURE);
 }
 
@@ -82,7 +85,6 @@ void intro()
           system("clear");
           return;
      }
-
      system("clear");
      fprintf(stdout, "_____________ Welcome to cimp command line interface _____________\n" );
      sleep(1);

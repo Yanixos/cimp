@@ -35,10 +35,9 @@ int BATCH_MODE;
 
 extern char *cmd_name[];                                                        // la liste des noms des commandes
 extern int (*parse_func[]) (char **, command*);                                 // la liste des fonctions des commandes
-
-//void init_graphics();
-
+extern void clean_trash();                                                      // nettoie les fichiers temporaires cimp
 extern int parse_by_mode(char* , char** , command* ,int );                      // le parser generique selon le batch mode
+
 int get_index(char*);                                                           // retourne l'index d'une commande dans la table
 int parse_open(char** args, command* cmd);                                      // parse_X ou X est le nom d'une commande : sert à parser une commande d'une façon unique
 int parse_save(char** args, command* cmd);
