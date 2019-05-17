@@ -8,7 +8,8 @@ typedef struct node{ // structure d'un noeud de liste de fenetres
   SDL_Window *w;
   SDL_Surface *img;
   char *name;
-
+  // undo redo index	
+  int index; 
   struct node *next;
 }node;
 
@@ -25,6 +26,8 @@ extern void set_w_by_id(int in,SDL_Window *w);
 extern char * get_name_by_id(int id);
 extern void set_name_by_id(int id,char *name);
 extern int get_id_name(char *name); //Retourne -1 si inexistant
+extern void set_index_by_id(int id,int ind);
+extern int get_index_by_id(int id); //Retourne -1 si inéxistant
 extern SDL_Window * creat_window(char *title,int high,int width);
 extern SDL_Surface *open_new(char *path);
 extern SDL_Surface * open_old(char * path,int id_win);

@@ -31,53 +31,8 @@ int save_bmp_img(SDL_Surface *img,const char * path);
 int save_png_img(SDL_Surface *img, const char *path);
 //int save_jpg_img(SDL_Surface *img, const char *path);
 //int save_jpeg_img(SDL_Surface *img, const char *path);
-
-
-/*
-int main(int argc,char *argv[]){
-
-
-    SDL_Window *window = NULL;
-    SDL_Surface *surface = NULL;
-
-    sdl_init();
-    open_new("../img/test1.bmp");
-    open_new("../img/test.bmp");
-
-    printf("\nTaille de liste %d",length(list));
-    open_old("../img/test.bmp",1);
-
-    printf("id de ../img/test.bmp  est %d \n", get_id_name("../img/test.bmp"));
-
-    //save_png_img(get_sf_by_id(1),"../img/out.png");
-
-    int rep=1;
-    do {
-        SDL_Event e;
-        if (SDL_PollEvent(&e)) {
-
-	        switch (e.type) {
-
-	          case SDL_QUIT:
-		          printf("fermeture de la fenetre.\n");
-		          rep=0;
-		          break;
-
-	          case SDL_MOUSEMOTION :
-		          printf("deplacement : %d %d\n",
-		           e.motion.x,
-		           e.motion.y);
-		          break;
-          }
-        }
-    } while (rep != 0);
-
-    close_window(1);
-    close_window(2);
-
-    return 0;
-}
-*/
+void set_index_by_id(int id,int ind);
+int get_index_by_id(int id);
 
 /*--------------------------Modele de liste de fenetres---------------------------------------*/
 
@@ -209,6 +164,22 @@ int get_id_name(char *name){ //Retourne -1 si inexistant
       n=next(n);
   }
   return -1;
+}
+
+void set_index_by_id(int id,int ind){
+  node *n=find_node(id);
+  if(n==NULL){
+    fprintf(stderr, "Introuvable index undo redo\n");
+    return;
+  }
+  n->index=ind;
+}
+int get_index_by_id(int id){
+  node *n=find_node(id);
+  if(n==NULL)
+    return -1;
+  return n->index;
+
 }
 
 /* Lébiration d'espace occupé par une lise */

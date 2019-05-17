@@ -1,6 +1,6 @@
 SOURCES = main.c parser.c script.c linker.c selection.c selection_effects.c image_effect.c win_img.c
 OBJS = $(SOURCES:%.c=%.o)
-INCLUDES = -l readline -lSDL2_image -lSDL2_image -lpng
+INCLUDES = -l readline -lSDL2_image -lSDL2_image -lpng -lm
 CFLAGS= -Wall $(shell sdl2-config --cflags --libs)
 
 cimp : $(OBJS)

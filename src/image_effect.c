@@ -7,6 +7,8 @@
 #include <string.h>
 #include <math.h>
 
+#define NAME_LEN 500
+
 
 SDL_Surface * vertical_sym(SDL_Surface* src);
 SDL_Surface * horizontal_sym(SDL_Surface* src);
@@ -287,7 +289,7 @@ SDL_Surface* rotate_img_a(SDL_Surface* src, float angle)
  Uint32 pixel;
  
 
- r = -angle*M_PI/180.0;
+ r = angle*M_PI / 180.0;
  r_cos= cos(r);
  r_sin= sin(r);
 
@@ -334,11 +336,10 @@ void apply_rotate(int id,int angle){
   set_sf_by_id(id,dest);
   
   SDL_Window *wd=get_w_by_id(id);
-  char *title=malloc(sizeof(SDL_GetWindowTitle(wd)));
+  char *title=malloc(NAME_LEN);
   strcpy(title,SDL_GetWindowTitle(wd));
   printf("%s\n",title);
   SDL_DestroyWindow(wd);
-  
   SDL_Window *wd2=creat_window(title,dest->h,dest->w);
   set_w_by_id(id,wd2);
   reset_content(wd2,1);
@@ -368,7 +369,7 @@ SDL_Surface * new_dim_img(SDL_Surface* src,int w,int h){
 
 void apply_resize(int id,int w,int h){
 
-  SDL_Surface *src,*dest;
+  SDL_Surface *src=NULL,*dest=NULL;
 
   src=get_sf_by_id(id);
   if(src==NULL){
@@ -376,16 +377,17 @@ void apply_resize(int id,int w,int h){
     return;
   }
 
-  dest=new_dim_img(src,w,h);
-  set_sf_by_id(id,dest);
-
   SDL_Window *wd=get_w_by_id(id);
-  char *title=malloc(sizeof(SDL_GetWindowTitle(wd)));
+  char *title=malloc(NAME_LEN);
   strcpy(title,SDL_GetWindowTitle(wd));
   printf("%s\n",title);
   SDL_DestroyWindow(wd);
-  
-  SDL_Window *wd2=creat_window(title,dest->h,dest->w);
+  //free(wd);
+  printf("%s\n",title);
+  dest=new_dim_img(src,w,h);
+  set_sf_by_id(id,dest);
+  SDL_Window *wd2=NULL;
+  wd2=creat_window(title,dest->h,dest->w);
   set_w_by_id(id,wd2);
   reset_content(wd2,1);
 
@@ -462,7 +464,7 @@ void apply_enlarge(int id,int gate,int r,int g,int b){
   set_sf_by_id(id,dest);
   
   SDL_Window *wd=get_w_by_id(id);
-  char *title=malloc(sizeof(SDL_GetWindowTitle(wd)));
+  char *title=malloc(NAME_LEN);
   strcpy(title,SDL_GetWindowTitle(wd));
   printf("%s\n",title);
   SDL_DestroyWindow(wd);
@@ -472,17 +474,19 @@ void apply_enlarge(int id,int gate,int r,int g,int b){
   reset_content(wd2,1);
 }
 
-
-
+/*
 //test
 int main(int argc, char const *argv[])
 {
   int d;
   open_new("../img/test1.bmp");
   scanf("%d",&d);
-  apply_resize(1,100,100);
+  apply_resize(1,800,800);
   scanf("%d",&d);
+  apply_rotate(1,50);
+  scanf("%d",&d);
+  printf("finishing...\n");
 
   return 0;
 }
-
+*/
