@@ -98,6 +98,8 @@ void intro()
      sleep(1);
      fprintf(stdout, "By default : batch mode is disabled\n");
      sleep(1);
+     fprintf(stdout, "\nNB: if you want to edit images in other directories, then you need to cd to that directory (path traversal conflict would happen if you use '..' for referencing images in other directories)\n");
+     sleep(1);
      fprintf(stdout, "\nHave fun editing your images ^_^\n\nPress any key to continue...\n");
      getchar();
      getc(stdin);

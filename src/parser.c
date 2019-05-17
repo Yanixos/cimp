@@ -320,22 +320,6 @@ char** make_args(int argc, int n, char* cmd_name, char*filename,char **args)    
      return new_args;
 }
 
-void add_cmd_to_history(char *cmd,char* file)                                   // ajouter une commande au fichier d'historique
-{
-     char dest[254];
-     sprintf(dest,"%s_cimphistory",file);
-     FILE * fp;
-
-     if ( ( fp = fopen(dest,"a+") ) == NULL)
-          fprintf(stderr,"cimp: add_cmd_to_history(): fopen failed.\n");
-
-     if ( ( fprintf(fp,"%s\n",cmd) ) == -1 )
-          fprintf(stderr,"cimp: add_cmd_to_history(): fprintf failed.\n");
-
-     if (fp)
-          fclose(fp);
-}
-
 void debug(char* line, command* cmd, char** args)                               // fonction de deboggage
 {
      printf("line: %s\n",line );
@@ -377,9 +361,8 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
      {
           if ( ! parse_func[cmd->index](args,cmd) )                             // parser la commande
           {
-               if ( cmd->index < 31 && !call_command(cmd) )                     // si elle s'execute bien
-                    if ( flag && cmd->index < 23  )                             // on vérifier qu'elle doit etre ajouter à  l'historique
-                         add_cmd_to_history(l,cmd->files[0]);                   // ajouter à l'historique
+               if ( cmd->index < 31  )                                          // si elle s'execute bien
+                    return call_command(cmd,l,flag);
           }
      }
      else if ( BATCH_MODE == 1 )                                                // batch mode 1 : command REGEX .....
@@ -391,9 +374,8 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                args[1] = strdup(list[i]);                                       // rendre ce fichier comme argument d'une commande simple
                if ( ! parse_func[cmd->index](args,cmd) )                        // parser la commande
                {
-                    if ( cmd->index < 31 &&  !call_command(cmd) )               // si elle s'execute bien
-                         if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
-                              add_cmd_to_history(l,cmd->files[0]);              // ajouter à l'historique
+                    if ( cmd->index < 31  )                                          // si elle s'execute bien
+                         return call_command(cmd,l,flag);
                }
           }
      }
@@ -408,9 +390,8 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                char** new_args = make_args(cmd->argc, n, args[0],list[i],args); // rendre ce fichier comme argument d'une commande simple
                if ( ! parse_func[cmd->index](new_args,cmd) )                    // parser
                {
-                    if ( cmd->index < 31 &&  !call_command(cmd) )               // si la commande s'execute bien
-                         if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
-                              add_cmd_to_history(l,cmd->files[0]);              // ajouter la commande à l'historique
+                    if ( cmd->index < 31  )                                          // si elle s'execute bien
+                         return call_command(cmd,l,flag);
                }
           }
      }
@@ -618,8 +599,31 @@ int parse_select_color(char** args, command* cmd)
 
 int parse_unselect(char** args, command* cmd)
 {
-     //unselect filename.EXT
+     //unselect filename.EXT [-p (X1,Y1) (X2,Y2)]
+     cmd->pixels[0] = (pixel*) calloc(1,sizeof(pixel));
+     cmd->pixels[1] = (pixel*) calloc(1,sizeof(pixel));
+     pixel *t1 = cmd->pixels[0];
+     pixel *t2 = cmd->pixels[1];
 
+     if ( (cmd->argc != 2 && cmd->argc != 5) || \
+        ( (check_extension(args[1]))) || \
+        ( (cmd->argc == 5) && ( strcmp(args[cmd->argc-2],"-p") || check_pixel(args[3],t1) || check_pixel(args[4],t2) ) )
+        )
+     {
+          fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
+          cmd = NULL ;
+          return -1;
+     }
+     cmd->files[0] = strdup(args[1]);
+     if (cmd->argc == 5 )
+          cmd->option = 10;
+
+     return 0;
+}
+
+int parse_copy(char** args, command* cmd)
+{
+     //copy filename.EXT
      if ( cmd-> argc != 2 || check_extension(args[1]) )
      {
           fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
@@ -628,12 +632,6 @@ int parse_unselect(char** args, command* cmd)
      }
      cmd->files[0] = strdup(args[1]);
      return 0;
-}
-
-int parse_copy(char** args, command* cmd)
-{
-     //copy filename.EXT
-     return parse_unselect(args,cmd);
 }
 
 int parse_cut(char** args, command* cmd)
@@ -814,13 +812,21 @@ int parse_replace(char** args, command* cmd)
 int parse_negative(char** args, command* cmd)
 {
      //negative filename.EXT
-     return parse_unselect(args,cmd);
+     if ( cmd->argc != 2 || check_extension(args[1]) )
+     {
+          fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
+          cmd = NULL ;
+          return -1;
+     }
+
+     cmd->files[0] = strdup(args[1]);
+     return 0;
 }
 
 int parse_gray(char** args, command* cmd)
 {
      // gray filename.EXT
-     return parse_unselect(args,cmd);
+     return parse_negative(args,cmd);
 }
 
 int parse_black_white(char** args, command* cmd)
@@ -944,19 +950,19 @@ int parse_execute_script(char** args, command* cmd)
 int parse_undo(char** args, command* cmd)
 {
      // undo filename.EXT
-     return parse_unselect(args,cmd);
+     return parse_negative(args,cmd);
 }
 
 int parse_redo(char** args, command* cmd)
 {
      // redo filename.EXT
-     return parse_unselect(args,cmd);
+     return parse_negative(args,cmd);
 }
 
 int parse_close(char** args, command* cmd)
 {
      // close filename.EXT
-     return parse_unselect(args,cmd);
+     return parse_negative(args,cmd);
 }
 
 int parse_cd(char** args, command* cmd)
@@ -1073,6 +1079,6 @@ int parse_exit(char** args, command* cmd)
 void clean_trash()
 {
      char dest[254];
-     sprintf(dest,"rm *_cimphistory 2>/dev/null 1>&2 && rm *_cimpbackup 2>/dev/null 1>&2");                         // supprimer les fichiers historiques qui sont au repertoire HOME
+     sprintf(dest,"rm ~/.*_cimphistory 2>/dev/null 1>&2  && rm ~/.*_cimpbabackup 2>/dev/null 1>&2");// supprimer les fichiers historiques qui sont au repertoire HOME
      system(dest);
 }

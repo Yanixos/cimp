@@ -11,8 +11,6 @@
 #include "parser.h"
 #include "win_img.h"
 
-int fake_id = 0;
-
 int write_script(char* filename)
 {
      char line[LINE_SIZE];
@@ -151,7 +149,7 @@ int undo_redo(char* filename, int ur_flag)
 {
 
      char dest[254];
-     sprintf(dest,"%s_cimphistory",filename);
+     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),filename);
 
      int nb = count_lines(dest);
 
@@ -184,13 +182,13 @@ int undo_redo(char* filename, int ur_flag)
                     pos = nb;
 
                sprintf(cmd,"rm %s && \
-                            cp %s_cimpbackup %s && \
-                            head -n %d %s_cimphistory > .temp.cimp && \
-                            sed -i 's/open %s/open %s -o %s/' .temp.cimp", filename,filename,filename,pos,filename,filename,filename,filename);
+                            cp ~/.%s_cimpbackup %s && \
+                            head -n %d ~/.%s_cimphistory > ~/.temp.cimp && \
+                            sed -i 's/open %s/open %s -o %s/' ~/.temp.cimp", filename,filename,filename,pos,filename,filename,filename,filename);
 
                system(cmd);
                char t[254];
-               sprintf(t,".temp.cimp");
+               sprintf(t,"%s/.temp.cimp",getenv("HOME"));
                execute_script(t);
                remove(t);
           }

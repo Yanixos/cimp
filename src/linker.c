@@ -48,34 +48,73 @@ int (*call_func[]) (command*) =                                                 
 void delete_cimpfiles(char* file)                                               // sert à supprimer l'historique d'une image
 {
      char dest[254];
-     sprintf(dest,"%s_cimphistory",file);                    // les fichiers historique sont au repertoire HOME
+     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);                    // les fichiers historique sont au repertoire HOME
      remove(dest);
 
      char tmp[254];
-     sprintf(tmp,"%s_cimpbackup",file);
+     sprintf(tmp,"%s/.%s_cimpbackup",getenv("HOME"),file);
      remove(tmp);                                                               // supprimer le fichier de backup
 }
 
-int call_command(command* cmd)
+int add_cmd_to_history(char *cmd,char* file)                                   // ajouter une commande au fichier d'historique
+{
+     char dest[254];
+     sprintf(dest,"%s/.%s_cimphistory",getenv("HOME"),file);
+     FILE * fp;
+
+     int id = get_id_name(file);
+     int pos = get_index_by_id(id);
+     int nb = count_lines(dest);
+
+     if ( nb > 1)
+     {
+          if ( pos == 0 )
+               pos = nb;
+
+          char c[1024];
+          sprintf(c,"head -n %d %s > temp && cp temp %s",pos,dest,dest);
+          system(c);
+     }
+
+     if ( ( fp = fopen(dest,"a+") ) == NULL)
+     {
+          fprintf(stderr,"cimp: add_cmd_to_history(): fopen failed.\n");
+          return -1;
+     }
+
+     if ( ( fprintf(fp,"%s\n",cmd) ) == -1 )
+     {
+          fprintf(stderr,"cimp: add_cmd_to_history(): fprintf failed.\n");
+          fclose(fp);
+          return -1;
+     }
+     if (fp)
+          fclose(fp);
+     return 0;
+}
+
+int call_command(command* cmd, char* line, int flag)
 {
      if ( ! init )
      {
           init = 1;
           sdl_init();
      }
-     return call_func[cmd->index](cmd);                                         // appeler la fonction selon son index
+
+     if ( ! call_func[cmd->index](cmd) )
+          if ( flag && cmd->index < 23  )                             // on vérifier qu'elle doit etre ajouter à  l'historique
+               return add_cmd_to_history(line,cmd->files[0]);         // appeler la fonction selon son index
+     return -1;
 }
 
 int call_open(command* cmd)
 {
-
      char temp[254];
-     sprintf(temp,"cp %s %s_cimpbackup",cmd->files[0],cmd->files[0]);
+     sprintf(temp,"cp %s ~/.%s_cimpbackup",cmd->files[0],cmd->files[0]);
      system(temp);
 
      if ( cmd->argc == 2 )                                                 // ouverture dans une nouvelle fenetre
      {
-
           open_new(cmd->files[0]);
           int id = get_id_name(cmd->files[0]);
           set_index_by_id(id,0);
@@ -86,11 +125,12 @@ int call_open(command* cmd)
      {
           int id = get_id_name(cmd->files[1]);                             // recuperer l'id de l'ancienne fenetre
           open_old(cmd->files[0],id);                                      // ouvrir l'image dans cette derniere
-          set_index_by_id(id,0);
+          int index = get_index_by_id(id);
+          set_index_by_id(id,index);
           refresh_selection_list();                                        // rafraishir la liste des fenetre
           return 0;
-     }
 
+     }
      return -1;
 }
 

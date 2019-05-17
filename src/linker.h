@@ -6,7 +6,7 @@
 
 extern int (*call_func[]) (command*);                                           // la liste des commandes appelantes
 
-extern int call_command(command* cmd);                                          // la fonction generique
+extern int call_command(command* cmd, char* line, int flag);                    // la fonction generique
 int call_open(command* cmd);                                                    // call_X : ou X le nom d'une commande, fait appel à la fonction d'une autre module pour etre executé
 int call_save(command* cmd);
 int call_export(command* cmd);

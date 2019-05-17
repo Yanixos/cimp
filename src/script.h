@@ -4,11 +4,12 @@
 
 #define LINE_SIZE 254                                                           // taille maximale d'une ligne
 
+extern int count_lines (char* filename);
 extern int write_script(char* filename);                                        // ecriture d'un script cimp
 extern int load_script(char* filename);                                         // chargement d'un script cimp
 extern int edit_script(char* filename);                                         // edition d'un script cimp
 extern int rename_script(char* filename,char* new);                             // renommage d'un script cimp
 extern int execute_script(char* filename);                                      // execution d'un script cimp
-extern int undo_redo(char* filename, int ur_flag);                               // revenir en arriere/avant 
+extern int undo_redo(char* filename, int ur_flag);                               // revenir en arriere/avant
 
 #endif
