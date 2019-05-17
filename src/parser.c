@@ -329,7 +329,7 @@ void add_cmd_to_history(char *cmd,char* file)                                   
      if ( ( fp = fopen(dest,"a+") ) == NULL)
           fprintf(stderr,"cimp: add_cmd_to_history(): fopen failed.\n");
 
-     if ( ( fprintf(fp,"%s",cmd) ) == -1 )
+     if ( ( fprintf(fp,"%s\n",cmd) ) == -1 )
           fprintf(stderr,"cimp: add_cmd_to_history(): fprintf failed.\n");
 
      if (fp)
@@ -364,22 +364,22 @@ void debug(char* line, command* cmd, char** args)                               
 
 int parse_by_mode (char* line, char** args, command* cmd,int flag)              // parser les commandes selon les leur batch mode
 {
+     char* l = strdup(line);
      cmd->argc = tokenize(line,args);
      cmd->index = get_index(args[0]);
      if ( cmd->index == -1 )                                                    // commande non existante
      {
-          fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
           fprintf(stderr,"cimp_parser(): command unknwon\n");
           return -1;
      }
 
-     if ( BATCH_MODE == 0 || ( BATCH_MODE > 0 && cmd->index > 22 ) )            // pas de batch mode
+     if ( BATCH_MODE == 0 || ( BATCH_MODE > 0 && cmd->index > 25 ) )            // pas de batch mode
      {
           if ( ! parse_func[cmd->index](args,cmd) )                             // parser la commande
           {
                if ( cmd->index < 31 && !call_command(cmd) )                     // si elle s'execute bien
                     if ( flag && cmd->index < 23  )                             // on vérifier qu'elle doit etre ajouter à  l'historique
-                         add_cmd_to_history(line,cmd->files[0]);                // ajouter à l'historique
+                         add_cmd_to_history(l,cmd->files[0]);                   // ajouter à l'historique
           }
      }
      else if ( BATCH_MODE == 1 )                                                // batch mode 1 : command REGEX .....
@@ -393,7 +393,7 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                {
                     if ( cmd->index < 31 &&  !call_command(cmd) )               // si elle s'execute bien
                          if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
-                              add_cmd_to_history(line,cmd->files[0]);           // ajouter à l'historique
+                              add_cmd_to_history(l,cmd->files[0]);              // ajouter à l'historique
                }
           }
      }
@@ -410,7 +410,7 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                {
                     if ( cmd->index < 31 &&  !call_command(cmd) )               // si la commande s'execute bien
                          if ( flag && cmd->index < 23 )                         // si on doit l'ajouter
-                              add_cmd_to_history(line,cmd->files[0]);           // ajouter la commande à l'historique
+                              add_cmd_to_history(l,cmd->files[0]);              // ajouter la commande à l'historique
                }
           }
      }
@@ -722,7 +722,7 @@ int parse_symetric(char** args, command* cmd)
 int parse_rotate(char** args, command* cmd)
 {
      // rotate filename.EXT -a ANGLE
-     if ( cmd-> argc != 4 || check_extension(args[1]) || strcmp(args[2],"-a") || ! atoi(args[3]) )
+     if ( cmd-> argc != 4 || check_extension(args[1]) || strcmp(args[2],"-a")  )
      {
           fprintf(stderr,"cimp_parser(): syntax error: %s",syntax[cmd->index]);
           cmd = NULL ;
@@ -1082,7 +1082,22 @@ int parse_exit(char** args, command* cmd)
           return -1;
      }
      if (cmd->argc == 2)
+     {
+          clean_trash();
           exit(atoi(args[1]));
+     }
+
      else
+     {
+          clean_trash();
           exit(EXIT_SUCCESS);
+     }
+     return -1;
+}
+
+void clean_trash()
+{
+     char dest[254];
+     sprintf(dest,"rm %s/.*_cimphistory 2>/dev/null 1>&2",getenv("HOME"));                       // supprimer les fichiers historiques qui sont au repertoire HOME
+     system(dest);
 }
