@@ -9,5 +9,6 @@ extern int load_script(char* filename);                                         
 extern int edit_script(char* filename);                                         // edition d'un script cimp
 extern int rename_script(char* filename,char* new);                             // renommage d'un script cimp
 extern int execute_script(char* filename);                                      // execution d'un script cimp
+extern int undo_redo(char* filename, int ur_flag);                               // revenir en arriere/avant 
 
 #endif
