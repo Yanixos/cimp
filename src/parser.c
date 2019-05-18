@@ -351,6 +351,7 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
      char* l = strdup(line);
      cmd->argc = tokenize(line,args);
      cmd->index = get_index(args[0]);
+     int r=1;
      if ( cmd->index == -1 )                                                    // commande non existante
      {
           fprintf(stderr,"cimp_parser(): command unknwon\n");
@@ -375,9 +376,10 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                if ( ! parse_func[cmd->index](args,cmd) )                        // parser la commande
                {
                     if ( cmd->index < 31  )                                          // si elle s'execute bien
-                         return call_command(cmd,l,flag);
+                         r &= call_command(cmd,l,flag);
                }
           }
+          return r;
      }
      else
      {                                                                          // batch mode 2 : command file1 ... fileN ...
@@ -391,9 +393,10 @@ int parse_by_mode (char* line, char** args, command* cmd,int flag)              
                if ( ! parse_func[cmd->index](new_args,cmd) )                    // parser
                {
                     if ( cmd->index < 31  )                                          // si elle s'execute bien
-                         return call_command(cmd,l,flag);
+                         r &= call_command(cmd,l,flag);
                }
           }
+          return r;
      }
      return 0;
 }
