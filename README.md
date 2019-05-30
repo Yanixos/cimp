@@ -1,3 +1,6 @@
+# architecture:
+![alt text](../project_management_docs/Architecture.png)
+
 # compilation:
 lancer la commande "make" depuis un terminal
 
